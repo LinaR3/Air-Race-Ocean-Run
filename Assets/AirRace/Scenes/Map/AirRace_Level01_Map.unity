@@ -1402,9 +1402,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCameraRig
   target: {fileID: 1661131128}
-  chaseOffset: {x: -15, y: 4, z: -9}
-  closeOffset: {x: -8, y: 2.8, z: -5}
-  followSmoothing: 4.2
+  chaseOffset: {x: -5, y: 4.5, z: -16}
+  closeOffset: {x: -2.5, y: 3, z: -11}
+  followSmoothing: 3.8
   aimHeight: 0.65
 --- !u!20 &1329045605
 Camera:
@@ -1439,7 +1439,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 1400
-  field of view: 62
+  field of view: 58
   orthographic: 0
   orthographic size: 5
   m_Depth: 0

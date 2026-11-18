@@ -214,6 +214,8 @@ namespace AirRace.EditorTools
             var chaseOffset = new Vector3(-5f, 4.5f, -16f);
             var alternateOffset = new Vector3(-2.5f, 3f, -11f);
             cameraRig.SetFraming(chaseOffset, alternateOffset, 3.8f, 0.65f);
+            EditorUtility.SetDirty(cameraRig);
+            EditorUtility.SetDirty(chaseCamera);
             chaseCamObject.transform.position = plane.transform.TransformPoint(chaseOffset);
             chaseCamObject.transform.LookAt(plane.transform.position + plane.transform.forward * 7f + Vector3.up * 0.65f);
 
