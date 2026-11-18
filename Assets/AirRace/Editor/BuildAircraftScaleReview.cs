@@ -310,8 +310,8 @@ public static class BuildAircraftScaleReview
                 string sourceName = original[i] ? original[i].name.ToLowerInvariant() : string.Empty;
                 Color color;
                 string colorName;
-                if (sourceName.Contains("white")) { color = blue; colorName = "blue body"; }
-                else if (sourceName.Contains("blue")) { color = red; colorName = "red trim"; }
+                if (sourceName.Contains("white")) { color = red; colorName = "red body"; }
+                else if (sourceName.Contains("blue")) { color = blue; colorName = "blue trim"; }
                 else if (sourceName.Contains("glass")) { color = deepBlue; colorName = "deep blue canopy"; }
                 else if (sourceName.Contains("aluminium") || sourceName.Contains("alu") || sourceName.Contains("prop") || sourceName.Contains("beacon") || sourceName.Contains("navgreen"))
                 { color = yellow; colorName = "yellow detail"; }
