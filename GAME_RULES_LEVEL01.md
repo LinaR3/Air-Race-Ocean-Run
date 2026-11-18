@@ -44,6 +44,15 @@ This is the current playable-design brief. Items marked **Tuning** are intention
 - **Tuning:** exact can and stunt scores, score UI/result presentation, and whether hitting a pylon also applies a score penalty.
 - On failure, offer a clear, immediate retry. On success, show finish status, elapsed time, checkpoints cleared, stunt/can score, and total score.
 
+## First playable tuning (implemented)
+
+- Flight energy starts at 72/100 and drains at 3.5 points per second. A correct gate restores 26; a can restores 30 and grants one stored boost charge, up to three.
+- A can adds 25 points. Each correct gate adds 10 points. Activating a stored boost lasts 3 seconds and increases cruise speed by 35%; energy drain pauses during the boost.
+- Space during an active boost queues another roll. Presses within 0.9 seconds build the current combo; each completed 360-degree axial roll awards 10 points times that combo and adds a small upward lift. A new activation requires a stored can charge.
+- The level has six gates, 24 m spacing between pylons, checkpoint centers 200–206 m apart (6.25–6.44 seconds at cruise), six aerial can pickups with bright oversized rings, a gold finish gate, and a 60-second limit. Pylon contact subtracts 18 energy and rebounds the aircraft; the run ends at or below 1.5 m above the configured waterline.
+- The aircraft root spawns with zero pitch and roll and maintains automatic 32 m/s horizontal forward cruise. **W/S** control altitude independently, while **A/D** turn the heading and bank only the visual model. The 4.8 km square ocean extends past an invisible flight boundary at ±900 m; the water edge stays beyond the camera's 1.4 km far clip and fog horizon. The camera follows from a rear three-quarter angle; **C** selects closer framing. The aircraft FBX mesh is kept intact so it renders reliably; animated propeller separation remains a follow-up item.
+- A compact live-data HUD is temporary. Figma implementation, presentation lights/air trails, and Wwise remain for later stages.
+
 ## Build order
 
 1. Import approved environment assets and organize their source/license records.
