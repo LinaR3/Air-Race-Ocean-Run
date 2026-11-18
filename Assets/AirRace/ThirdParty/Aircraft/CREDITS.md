@@ -1,0 +1,7 @@
+# OpenGameArt — Aerobatics Aircraft
+
+- Source: https://opengameart.org/content/aerobatics-aircraft
+- License: CC BY-SA 3.0 (verify original bundled license before redistribution)
+- Attribution: Martins Upitis as named by the source listing.
+- Intended use: aircraft visual integration after the course/map phase.
+- Status: not downloaded yet; preserve the original archive and license when imported.
