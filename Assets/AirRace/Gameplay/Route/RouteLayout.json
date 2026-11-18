@@ -1,8 +1,10 @@
 {
   "level": "Level 01",
   "durationSeconds": 60,
-  "route": "Closed broad oval loop",
+  "route": "Closed broad oval loop over open ocean",
   "checkpoints": 6,
   "finish": 1,
-  "designNote": "Six sequential paired pylon gates and a visually distinct finish near the start. Long turns and gentle altitude changes. Route shape is a first-pass layout to tune in Unity after playtesting."
+  "gatePairSpacingMeters": 18,
+  "nominalGateHeightMeters": 15,
+  "designNote": "Six sequential paired pylon gates and a distinct seventh finish marker near the start. Long turns, gentle altitude changes, sparse horizon dressing. First pass layout; tune in Unity after camera and flight feel review."
 }
