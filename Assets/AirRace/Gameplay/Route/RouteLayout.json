@@ -4,7 +4,14 @@
   "route": "Closed broad oval loop over open ocean",
   "checkpoints": 6,
   "finish": 1,
-  "gatePairSpacingMeters": 18,
-  "nominalGateHeightMeters": 15,
-  "designNote": "Six sequential paired pylon gates and a distinct seventh finish marker near the start. Long turns, gentle altitude changes, sparse horizon dressing. First pass layout; tune in Unity after camera and flight feel review."
+  "gatePairSpacingMeters": 24,
+  "checkpointCenterPositionsMeters": [[0, 14, 200], [180, 19, 100], [180, 15, -100], [0, 20, -200], [-180, 16, -100], [-180, 19, 100]],
+  "checkpointSegmentDistancesMeters": [206, 200, 206, 206, 200, 206],
+  "checkpointCenterSpacingMeters": "200-206; 6.25-6.44 seconds at 32 m/s cruise speed",
+  "oceanSizeMeters": "4800 x 4800 square",
+  "invisibleFlightBoundaryMeters": "900 from world origin on X and Z",
+  "pylonHeightMeters": 25,
+  "finishMarker": "Gold paired pylons near checkpoint 1",
+  "energyCanVisibility": "5 m tall can inside a 10.4 m diameter double-sided bright yellow-orange emissive ring; pickup trigger radius 6 m",
+  "designNote": "Six sequential paired pylon gates around a broad closed oval and a distinct seventh finish marker. Horizontal heading stays level; W/S control climb and descent without removing forward travel. A 4.8 km ocean tile and 1.4 km camera far clip keep the water edge beyond the visible horizon; the invisible square flight boundary is at 900 m from origin."
 }
