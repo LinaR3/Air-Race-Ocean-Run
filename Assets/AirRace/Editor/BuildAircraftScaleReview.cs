@@ -12,26 +12,19 @@ public static class BuildAircraftScaleReview
     private const string RaftPath = "Assets/AirRace/ThirdParty/Polyfork/swim-raft-6aefb5.fbx";
     private const string WaterPath = "Assets/AirRace/ThirdParty/AURW/AURW/Resources/Prefabs/Water100x100.prefab";
     private const string PreviewPath = "Assets/AirRace/Documentation/Previews/aircraft_scale_review.png";
+    private const string PylonPrefabPath = "Assets/AirRace/Art/Models/Pylons/AirRace_Pylon_SwimRaft.prefab";
+    private const string PylonAssetsFolder = "Assets/AirRace/Art/Models/Pylons/AirRace_Pylon_SwimRaft_Assets";
 
     [MenuItem("Air Race/Build Aircraft Scale Review")]
     public static void Build()
     {
-        var aircraftImporter = AssetImporter.GetAtPath(AircraftPath) as ModelImporter;
-        if (aircraftImporter)
-        {
-            if (!aircraftImporter.bakeAxisConversion)
-            {
-                aircraftImporter.bakeAxisConversion = true;
-                aircraftImporter.SaveAndReimport();
-            }
-            AssetDatabase.ImportAsset(AircraftPath, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
-        }
-
         if (!AssetDatabase.LoadAssetAtPath<GameObject>(AircraftPath))
         {
             Debug.LogError("Aircraft FBX is not imported yet: " + AircraftPath);
             return;
         }
+
+        EnsureReusablePylonPrefab();
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         scene.name = "AircraftScaleReview";
@@ -78,32 +71,15 @@ public static class BuildAircraftScaleReview
             }
         }
 
-        var raftPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(RaftPath);
-        var raft = raftPrefab ? (GameObject)PrefabUtility.InstantiatePrefab(raftPrefab) : null;
-        if (raft)
+        var pylonPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PylonPrefabPath);
+        if (pylonPrefab)
         {
-            raft.name = "Swim Raft · scaled to 10 m";
-            raft.transform.position = new Vector3(-8f, 0f, 0f);
-            FitHorizontalWidth(raft, 10f);
-            AlignBoundsBottom(raft, 0.05f);
-            ColorizeRaft(raft);
-        }
-
-        // Real Air Race pylons are approximately 25 m tall, 5 m wide at the base,
-        // and 0.75 m at the tip. The imported Fab traffic marker is shown separately
-        // at left to make its scale and silhouette limitations clear.
-        var pylon = CreateRacePylon("Air Race pylon · 25 m reference", Vector3.zero, 25f, 5f, 0.75f);
-        pylon.transform.position = new Vector3(-8f, raft ? BoundsOf(raft).max.y : 0.35f, 0f);
-
-        if (raftPrefab)
-        {
-            var secondRaft = (GameObject)PrefabUtility.InstantiatePrefab(raftPrefab);
-            secondRaft.name = "Gate raft · 10 m reference";
-            secondRaft.transform.position = new Vector3(8f, 0f, 0f);
-            FitHorizontalWidth(secondRaft, 10f);
-            AlignBoundsBottom(secondRaft, 0.05f);
-            ColorizeRaft(secondRaft);
-            CreateRacePylon("Gate pylon · 25 m reference", new Vector3(8f, BoundsOf(secondRaft).max.y, 0f), 25f, 5f, 0.75f);
+            var leftPylon = (GameObject)PrefabUtility.InstantiatePrefab(pylonPrefab);
+            leftPylon.name = "Air Race pylon left · 25 m";
+            leftPylon.transform.position = new Vector3(-8f, 0f, 0f);
+            var rightPylon = (GameObject)PrefabUtility.InstantiatePrefab(pylonPrefab);
+            rightPylon.name = "Air Race pylon right · 25 m";
+            rightPylon.transform.position = new Vector3(8f, 0f, 0f);
         }
 
         var aircraft = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(AircraftPath));
@@ -136,6 +112,94 @@ public static class BuildAircraftScaleReview
         Capture(camera);
         Debug.Log("Built isolated aircraft scale review scene: " + ScenePath);
         Debug.Log("Reference dimensions: airplane listing 8.2 m; Air Race pylon 25 m high, 5 m base, 0.75 m tip.");
+    }
+
+    private static void EnsureReusablePylonPrefab()
+    {
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(PylonPrefabPath)) return;
+
+        EnsureFolder(PylonAssetsFolder);
+        var white = LoadOrCreateMaterial(PylonAssetsFolder + "/Pylon_White.mat", "Pylon · white", Color.white);
+        var red = LoadOrCreateMaterial(PylonAssetsFolder + "/Pylon_Red.mat", "Pylon · race red", new Color(0.89f, 0.055f, 0.12f));
+        var navy = LoadOrCreateMaterial(PylonAssetsFolder + "/SwimRaft_Navy.mat", "Swim Raft · navy", new Color(0.025f, 0.09f, 0.19f));
+
+        var root = new GameObject("AirRace_Pylon_SwimRaft");
+        var raftSource = AssetDatabase.LoadAssetAtPath<GameObject>(RaftPath);
+        if (!raftSource)
+        {
+            Debug.LogError("Swim Raft FBX is not imported: " + RaftPath);
+            Object.DestroyImmediate(root);
+            return;
+        }
+
+        var raft = (GameObject)PrefabUtility.InstantiatePrefab(raftSource);
+        raft.name = "SwimRaft_Platform_10m";
+        raft.transform.SetParent(root.transform, false);
+        raft.transform.localPosition = Vector3.zero;
+        FitHorizontalWidth(raft, 10f);
+        AlignBoundsBottom(raft, 0.05f);
+        ColorizeRaft(raft, navy);
+        float bodyBase = BoundsOf(raft).max.y;
+
+        var body = new GameObject("Inflatable_Pylon_25m");
+        body.transform.SetParent(root.transform, false);
+        body.transform.localPosition = Vector3.up * bodyBase;
+        var bands = new[]
+        {
+            new Band(0f, 14f, white),
+            new Band(14f, 6f, red),
+            new Band(20f, 3.5f, white),
+            new Band(23.5f, 1.5f, red)
+        };
+        for (int i = 0; i < bands.Length; i++)
+        {
+            var band = bands[i];
+            string meshPath = PylonAssetsFolder + $"/Pylon_Band_{i + 1:00}.asset";
+            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+            if (!mesh)
+            {
+                mesh = MakeTaperedBand(band.start, band.start + band.height, 25f, 2.5f, 0.375f, 20);
+                mesh.name = $"Pylon_Band_{i + 1:00}";
+                AssetDatabase.CreateAsset(mesh, meshPath);
+            }
+
+            var segment = new GameObject($"Pylon_Band_{i + 1:00}");
+            segment.transform.SetParent(body.transform, false);
+            segment.AddComponent<MeshFilter>().sharedMesh = mesh;
+            segment.AddComponent<MeshRenderer>().sharedMaterial = band.material;
+            segment.AddComponent<MeshCollider>().sharedMesh = mesh;
+        }
+
+        AssetDatabase.SaveAssets();
+        PrefabUtility.SaveAsPrefabAsset(root, PylonPrefabPath);
+        Object.DestroyImmediate(root);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private static void EnsureFolder(string path)
+    {
+        if (AssetDatabase.IsValidFolder(path)) return;
+        string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');
+        string folder = Path.GetFileName(path);
+        if (!AssetDatabase.IsValidFolder(parent)) EnsureFolder(parent);
+        AssetDatabase.CreateFolder(parent, folder);
+    }
+
+    private static Material LoadOrCreateMaterial(string path, string name, Color color)
+    {
+        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (!material)
+        {
+            material = MakeMaterial(name, color);
+            AssetDatabase.CreateAsset(material, path);
+        }
+        else
+        {
+            material.color = color;
+            EditorUtility.SetDirty(material);
+        }
+        return material;
     }
 
     private static void Capture(Camera camera)
@@ -183,37 +247,11 @@ public static class BuildAircraftScaleReview
         return bounds;
     }
 
-    private static GameObject CreateRacePylon(string name, Vector3 position, float height, float baseDiameter, float tipDiameter)
-    {
-        var root = new GameObject(name);
-        root.transform.position = position;
-        var bands = new[]
-        {
-            new Band(0f, 14f, Color.white),
-            new Band(14f, 6f, new Color(0.89f, 0.055f, 0.12f)),
-            new Band(20f, 3.5f, Color.white),
-            new Band(23.5f, 1.5f, new Color(0.89f, 0.055f, 0.12f))
-        };
-        var radiusAtBase = baseDiameter * 0.5f;
-        var radiusAtTip = tipDiameter * 0.5f;
-        foreach (var band in bands)
-        {
-            var segment = new GameObject("Inflatable band");
-            segment.transform.SetParent(root.transform, false);
-            var filter = segment.AddComponent<MeshFilter>();
-            var renderer = segment.AddComponent<MeshRenderer>();
-            filter.sharedMesh = MakeTaperedBand(band.start, band.start + band.height, height,
-                radiusAtBase, radiusAtTip, 20);
-            renderer.sharedMaterial = MakeMaterial("Air Race review · " + band.color, band.color);
-        }
-        return root;
-    }
-
     private struct Band
     {
         public readonly float start, height;
-        public readonly Color color;
-        public Band(float start, float height, Color color) { this.start = start; this.height = height; this.color = color; }
+        public readonly Material material;
+        public Band(float start, float height, Material material) { this.start = start; this.height = height; this.material = material; }
     }
 
     private static Mesh MakeTaperedBand(float y0, float y1, float totalHeight, float r0, float r1, int sides)
@@ -258,41 +296,38 @@ public static class BuildAircraftScaleReview
 
     private static void ColorizeAircraft(GameObject aircraft)
     {
-        var renderers = aircraft.GetComponentsInChildren<Renderer>(true);
-        var palette = new[]
+        var red = new Color(0.9f, 0.025f, 0.12f);
+        var blue = new Color(0.02f, 0.20f, 0.70f);
+        var deepBlue = new Color(0.015f, 0.07f, 0.21f);
+        var yellow = new Color(1f, 0.72f, 0.015f);
+        foreach (var renderer in aircraft.GetComponentsInChildren<Renderer>(true))
         {
-            new Color(0.91f, 0.93f, 0.96f),
-            new Color(0.02f, 0.22f, 0.64f),
-            new Color(0.88f, 0.035f, 0.12f),
-            new Color(0.98f, 0.71f, 0.08f)
-        };
-        int index = 0;
-        foreach (var renderer in renderers)
-        {
-            var source = renderer.sharedMaterials;
-            var result = new Material[source.Length];
-            for (int i = 0; i < source.Length; i++)
+            var original = renderer.sharedMaterials;
+            if (original.Length == 0) continue;
+            var recolored = new Material[original.Length];
+            for (int i = 0; i < original.Length; i++)
             {
-                var sourceMat = source[i];
-                var clone = MakeMaterial("Aircraft review · " + (sourceMat ? sourceMat.name : "palette"), palette[index++ % palette.Length]);
-                result[i] = clone;
+                string sourceName = original[i] ? original[i].name.ToLowerInvariant() : string.Empty;
+                Color color;
+                string colorName;
+                if (sourceName.Contains("white")) { color = blue; colorName = "blue body"; }
+                else if (sourceName.Contains("blue")) { color = red; colorName = "red trim"; }
+                else if (sourceName.Contains("glass")) { color = deepBlue; colorName = "deep blue canopy"; }
+                else if (sourceName.Contains("aluminium") || sourceName.Contains("alu") || sourceName.Contains("prop") || sourceName.Contains("beacon") || sourceName.Contains("navgreen"))
+                { color = yellow; colorName = "yellow detail"; }
+                else { color = deepBlue; colorName = "deep blue detail"; }
+                recolored[i] = MakeMaterial($"Aircraft livery · {colorName}", color);
             }
-            renderer.sharedMaterials = result;
+            renderer.sharedMaterials = recolored;
         }
     }
 
-    private static void ColorizeRaft(GameObject raft)
+    private static void ColorizeRaft(GameObject raft, Material navy)
     {
         foreach (var renderer in raft.GetComponentsInChildren<Renderer>(true))
         {
-            var source = renderer.sharedMaterials;
-            var result = new Material[source.Length];
-            for (int i = 0; i < source.Length; i++)
-            {
-                var material = MakeMaterial("Aircraft review · navy float", new Color(0.025f, 0.09f, 0.19f));
-                if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", 0.35f);
-                result[i] = material;
-            }
+            var result = new Material[renderer.sharedMaterials.Length];
+            for (int i = 0; i < result.Length; i++) result[i] = navy;
             renderer.sharedMaterials = result;
         }
     }
