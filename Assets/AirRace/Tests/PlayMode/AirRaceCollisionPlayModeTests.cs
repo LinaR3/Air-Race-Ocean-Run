@@ -108,7 +108,7 @@ namespace AirRace.Tests
         }
 
         [UnityTest]
-        public IEnumerator ChaseCamera_UsesCenteredElevatedAngleAndSeesTheNextGate()
+        public IEnumerator ChaseCamera_StaysBehindWithLevelHorizonAndSeesTheNextGate()
         {
             SceneManager.LoadScene(SceneName);
             yield return new WaitForSeconds(0.5f);
@@ -122,11 +122,10 @@ namespace AirRace.Tests
 
             Vector3 offset = camera.transform.position - aircraft.transform.position;
             Assert.That(Vector3.Dot(offset, -aircraft.transform.forward), Is.GreaterThan(8f), "Camera should stay behind the aircraft.");
-            Assert.That(offset.y, Is.GreaterThan(2f), "Camera should be elevated above the aircraft.");
-            Assert.That(camera.transform.forward.y, Is.LessThan(0f), "Camera should look slightly down toward the route.");
+            Assert.That(offset.y, Is.InRange(2f, 7f), "Camera should be only slightly above the aircraft.");
+            Assert.That(Mathf.Abs(camera.transform.forward.y), Is.LessThan(0.2f), "Camera should preserve a near-level horizon.");
             Assert.That(Mathf.Abs(Vector3.Dot(offset, aircraft.transform.right)), Is.LessThan(1.5f),
                 "The main view should be centered over the aircraft, not off to one side.");
-            Assert.That(camera.transform.forward.y, Is.LessThan(-0.25f), "The main camera should read as a clearly elevated view.");
 
             Vector3 gateOnScreen = camera.WorldToViewportPoint(nextGate.transform.position);
             Assert.That(gateOnScreen.z, Is.GreaterThan(0f), "The next gate should be in front of the camera.");
@@ -137,25 +136,27 @@ namespace AirRace.Tests
         }
 
         [UnityTest]
-        public IEnumerator RaceHud_ShowsAndAdvancesCheckpointNumber()
+        public IEnumerator RaceHud_ShowsRouteRadarAndNamesActiveGate()
         {
             SceneManager.LoadScene(SceneName);
             yield return null;
             yield return null;
 
             GameObject hudCanvas = GameObject.Find("AirRace_HUD_Canvas");
-            GameObject checkpointLabel = GameObject.Find("CHECKPOINT_VALUE");
-            Assert.That(hudCanvas, Is.Not.Null, "The temporary OnGUI display should be replaced by a screen-space HUD.");
+            GameObject checkpointLabel = GameObject.Find("ACTIVE_GATE");
+            GameObject radar = GameObject.Find("ROUTE_RADAR");
+            Assert.That(hudCanvas, Is.Not.Null, "The flight HUD should render in screen space.");
             Assert.That(checkpointLabel, Is.Not.Null);
+            Assert.That(radar, Is.Not.Null, "The HUD should show the actual checkpoint route radar.");
             Text checkpointText = checkpointLabel.GetComponent<Text>();
-            Assert.That(checkpointText.text, Is.EqualTo("01  /  06"));
+            Assert.That(checkpointText.text, Does.Contain("PUERTA  01"));
 
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
             MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
                 .First(component => component.GetType().Name == "AirRaceRunManager");
             manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { 0 });
             yield return null;
-            Assert.That(checkpointText.text, Is.EqualTo("02  /  06"), "The HUD should display the next active checkpoint.");
+            Assert.That(checkpointText.text, Does.Contain("PUERTA  02"), "The HUD should display the next active checkpoint.");
         }
 
         [UnityTest]

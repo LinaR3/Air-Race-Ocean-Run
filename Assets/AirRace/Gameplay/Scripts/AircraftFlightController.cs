@@ -1,49 +1,52 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace AirRace.Gameplay
 {
+    /// <summary>Arcade flight: pitch and bank determine the actual travel direction.</summary>
     [RequireComponent(typeof(Rigidbody))]
     public sealed class AircraftFlightController : MonoBehaviour
     {
         [SerializeField] private Transform visualRoot;
-        [SerializeField] private float cruiseSpeed = 32f;
+        [SerializeField] private float cruiseSpeed = 34f;
         [SerializeField] private float boostSpeedMultiplier = 1.35f;
-        [SerializeField] private float yawRate = 34f;
-        [SerializeField] private float climbSpeed = 8f;
-        [SerializeField] private float verticalAcceleration = 18f;
-        [SerializeField] private float visualPitchAngle = 16f;
-        [SerializeField] private float maximumAltitude = 70f;
+        [SerializeField] private float maximumPitch = 24f;
+        [SerializeField] private float pitchResponse = 58f;
+        [SerializeField] private float maximumBank = 52f;
+        [SerializeField] private float bankResponse = 105f;
+        [SerializeField] private float turnRate = 52f;
+        [SerializeField] private float maximumAltitude = 110f;
         [SerializeField] private float waterLine = -4.5f;
         [SerializeField] private float worldBoundaryHalfExtent = 900f;
-        [SerializeField] private float impactSeparationDuration = 0.28f;
-        [SerializeField] private float impactRecoveryDuration = 0.22f;
-        [SerializeField] private float impactSeparationSpeed = 17f;
+        [SerializeField] private float brakeSpeedMultiplier = 0.68f;
+        [SerializeField] private float brakeTurnMultiplier = 1.65f;
+        [SerializeField] private float impactRecoilSpeed = 14f;
+        [SerializeField] private float impactRecoveryDuration = 0.32f;
         [SerializeField] private float impactDamageCooldown = 0.65f;
-        [SerializeField] private float impactAvoidanceAngle = 30f;
 
         private Rigidbody body;
         private float pitchInput;
-        private float yawInput;
-        private float bankInput;
-        private float verticalSpeed;
-        private float visualRoll;
+        private float turnInput;
+        private bool braking;
+        private float pitchAngle;
+        private float bankAngle;
+        private float heading;
+        private float impactRecoveryRemaining;
+        private float impactDamageCooldownRemaining;
+        private float stuntLiftVelocity;
         private float rollProgress;
-        private bool rolling;
         private float rollStartAngle;
         private float rollTargetAngle;
-        private float visualBank;
+        private float visualRoll;
+        private bool rolling;
         private bool crashed;
         private int queuedRolls;
-        private float stuntLiftVelocity;
-        private Vector3 impactSeparationVelocity;
-        private float impactRecoveryRemaining;
-        private float impactRecoveryTotal;
-        private float impactDamageCooldownRemaining;
-        private Quaternion impactStartRotation;
-        private float impactEscapeSign;
 
         public bool IsRecoveringFromImpact => impactRecoveryRemaining > 0f;
+        public float AirSpeed => body != null ? body.linearVelocity.magnitude : cruiseSpeed;
+        public float Altitude => transform.position.y - waterLine;
+        public float Heading => heading;
 
         public void SetVisualRoot(Transform root) => visualRoot = root;
 
@@ -54,6 +57,7 @@ namespace AirRace.Gameplay
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             body.constraints = RigidbodyConstraints.None;
+            heading = transform.eulerAngles.y;
             if (visualRoot == null && transform.childCount > 0) visualRoot = transform.GetChild(0);
         }
 
@@ -65,16 +69,14 @@ namespace AirRace.Gameplay
                 return;
             }
 
-            var keyboard = Keyboard.current;
+            Keyboard keyboard = Keyboard.current;
             if (keyboard == null || crashed) return;
             pitchInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
-            yawInput = (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f);
-            bankInput = yawInput;
+            turnInput = (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f);
+            braking = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
 
-            if (keyboard.spaceKey.wasPressedThisFrame && AirRaceRunManager.Instance != null)
-            {
-                if (AirRaceRunManager.Instance.TryActivateBoost()) StartBarrelRoll();
-            }
+            if (keyboard.spaceKey.wasPressedThisFrame && AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.TryActivateBoost())
+                StartBarrelRoll();
 
             if (body.position.y <= waterLine + 1.5f && AirRaceRunManager.Instance != null)
             {
@@ -85,103 +87,81 @@ namespace AirRace.Gameplay
 
         private void FixedUpdate()
         {
+            float dt = Time.fixedDeltaTime;
             if (crashed || (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.State != RaceState.Racing))
             {
                 body.linearVelocity = Vector3.zero;
                 return;
             }
 
-            impactDamageCooldownRemaining = Mathf.Max(0f, impactDamageCooldownRemaining - Time.fixedDeltaTime);
-
+            impactDamageCooldownRemaining = Mathf.Max(0f, impactDamageCooldownRemaining - dt);
             if (impactRecoveryRemaining > 0f)
             {
-                impactRecoveryRemaining = Mathf.Max(0f, impactRecoveryRemaining - Time.fixedDeltaTime);
-                float turnProgress = 1f - impactRecoveryRemaining / Mathf.Max(0.01f, impactRecoveryTotal);
-                float turnAngle = impactEscapeSign * impactAvoidanceAngle * Mathf.SmoothStep(0f, 1f, turnProgress);
-                body.MoveRotation(Quaternion.AngleAxis(turnAngle, Vector3.up) * impactStartRotation);
-                if (impactRecoveryRemaining > impactRecoveryTotal - impactSeparationDuration)
-                {
-                    // Hold the outward impulse briefly. Normal cruise velocity is
-                    // otherwise reassigned every physics tick and pins the plane
-                    // against the collider before it can separate.
-                    body.linearVelocity = impactSeparationVelocity;
-                }
-                else
-                {
-                    float blend = 1f - impactRecoveryRemaining / Mathf.Max(0.01f, impactRecoveryTotal - impactSeparationDuration);
-                    float recoveryCruiseSpeed = cruiseSpeed;
-                    if (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.IsBoosting) recoveryCruiseSpeed *= boostSpeedMultiplier;
-                    Vector3 cruiseVelocity = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized * recoveryCruiseSpeed + Vector3.up * verticalSpeed;
-                    body.linearVelocity = Vector3.Lerp(impactSeparationVelocity, cruiseVelocity, Mathf.SmoothStep(0f, 1f, blend));
-                }
+                impactRecoveryRemaining = Mathf.Max(0f, impactRecoveryRemaining - dt);
+                // Keep the contact impulse free to move the aircraft away from the pylon.
+                body.angularVelocity = Vector3.zero;
                 return;
             }
 
             float speed = cruiseSpeed;
+            if (braking) speed *= brakeSpeedMultiplier;
             if (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.IsBoosting) speed *= boostSpeedMultiplier;
 
-            Quaternion yaw = Quaternion.AngleAxis(yawInput * yawRate * Time.fixedDeltaTime, Vector3.up);
-            body.MoveRotation(yaw * body.rotation);
-            verticalSpeed = Mathf.MoveTowards(verticalSpeed, pitchInput * climbSpeed, verticalAcceleration * Time.fixedDeltaTime);
-            stuntLiftVelocity = Mathf.MoveTowards(stuntLiftVelocity, 0f, 1.1f * Time.fixedDeltaTime);
-            Vector3 horizontalForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
-            body.linearVelocity = horizontalForward * speed + Vector3.up * (verticalSpeed + stuntLiftVelocity);
+            pitchAngle = Mathf.MoveTowards(pitchAngle, pitchInput * maximumPitch, pitchResponse * dt);
+            float targetBank = -turnInput * maximumBank;
+            bankAngle = Mathf.MoveTowards(bankAngle, targetBank, bankResponse * dt);
+            float bankTurn = Mathf.Sin(Mathf.Abs(bankAngle) * Mathf.Deg2Rad);
+            float turnScale = braking ? brakeTurnMultiplier : 1f;
+            heading += turnInput * turnRate * bankTurn * turnScale * dt;
 
-            Vector3 nextPosition = body.position + body.linearVelocity * Time.fixedDeltaTime;
+            Quaternion orientation = Quaternion.Euler(-pitchAngle, heading, bankAngle);
+            body.MoveRotation(orientation);
+            stuntLiftVelocity = Mathf.MoveTowards(stuntLiftVelocity, 0f, 3f * dt);
+            Vector3 flightVelocity = orientation * Vector3.forward * speed + Vector3.up * stuntLiftVelocity;
+            body.linearVelocity = flightVelocity;
+
+            Vector3 nextPosition = body.position + flightVelocity * dt;
             bool hitBoundary = Mathf.Abs(nextPosition.x) > worldBoundaryHalfExtent || Mathf.Abs(nextPosition.z) > worldBoundaryHalfExtent;
             if (hitBoundary)
             {
                 nextPosition.x = Mathf.Clamp(nextPosition.x, -worldBoundaryHalfExtent, worldBoundaryHalfExtent);
                 nextPosition.z = Mathf.Clamp(nextPosition.z, -worldBoundaryHalfExtent, worldBoundaryHalfExtent);
                 body.position = nextPosition;
-                Vector3 inward = new Vector3(-body.position.x, 0f, -body.position.z).normalized;
-                if (inward.sqrMagnitude > 0.01f) body.MoveRotation(Quaternion.RotateTowards(body.rotation, Quaternion.LookRotation(inward, Vector3.up), yawRate * 2f * Time.fixedDeltaTime));
+                heading = Mathf.Atan2(-body.position.x, -body.position.z) * Mathf.Rad2Deg;
+                bankAngle = 0f;
             }
 
-            if (transform.position.y > maximumAltitude)
+            if (body.position.y > maximumAltitude)
             {
                 body.position = new Vector3(body.position.x, maximumAltitude, body.position.z);
-                verticalSpeed = Mathf.Min(0f, verticalSpeed);
-                body.linearVelocity = horizontalForward * speed + Vector3.up * Mathf.Min(0f, stuntLiftVelocity);
+                pitchAngle = Mathf.Min(0f, pitchAngle);
             }
         }
 
         private void LateUpdate()
         {
             if (visualRoot == null) return;
-
-            float bankTarget = -bankInput * 36f;
-            visualBank = Mathf.Lerp(visualBank, bankTarget, 7f * Time.deltaTime);
-
             if (rolling)
             {
                 rollProgress += Time.deltaTime / 0.58f;
-                float eased = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(rollProgress));
-                visualRoll = Mathf.Lerp(rollStartAngle, rollTargetAngle, eased);
+                visualRoll = Mathf.Lerp(rollStartAngle, rollTargetAngle, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(rollProgress)));
                 if (rollProgress >= 1f)
                 {
                     rolling = false;
                     visualRoll = 0f;
                     if (AirRaceRunManager.Instance != null) AirRaceRunManager.Instance.ScoreCompletedRoll();
-                    stuntLiftVelocity = Mathf.Min(13f, stuntLiftVelocity + 2.2f * (AirRaceRunManager.Instance != null ? AirRaceRunManager.Instance.Combo : 1));
-                    if (queuedRolls > 0)
-                    {
-                        queuedRolls--;
-                        BeginBarrelRoll();
-                    }
+                    stuntLiftVelocity = Mathf.Min(8f, stuntLiftVelocity + 1.2f);
+                    if (queuedRolls > 0) { queuedRolls--; BeginBarrelRoll(); }
                 }
             }
-            visualRoot.localRotation = Quaternion.Euler(-pitchInput * visualPitchAngle, 0f, visualBank + visualRoll);
+            // The aircraft root now owns real pitch and bank. Child rotation is reserved for the stunt.
+            visualRoot.localRotation = Quaternion.Euler(0f, 0f, visualRoll);
         }
 
         private void StartBarrelRoll()
         {
             if (visualRoot == null) return;
-            if (rolling)
-            {
-                queuedRolls++;
-                return;
-            }
+            if (rolling) { queuedRolls = Mathf.Min(queuedRolls + 1, 3); return; }
             BeginBarrelRoll();
         }
 
@@ -195,38 +175,71 @@ namespace AirRace.Gameplay
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (crashed) return;
-            if (collision.contactCount == 0) return;
-            if (impactRecoveryRemaining > 0f) return;
+            if (crashed || collision.contactCount == 0 || impactRecoveryRemaining > 0f) return;
             ContactPoint contact = collision.GetContact(0);
-            BeginImpactRecovery(contact.normal, contact.point);
-        }
+            Vector3 away = contact.normal.normalized;
+            if (away.sqrMagnitude < 0.01f) away = -transform.forward;
+            // Recoil follows the collision normal; no artificial yaw that can make the plane orbit the pylon.
+            away = (away + Vector3.up * 0.24f).normalized;
+            body.linearVelocity = away * impactRecoilSpeed;
+            body.angularVelocity = Vector3.zero;
+            impactRecoveryRemaining = impactRecoveryDuration;
 
-        private void BeginImpactRecovery(Vector3 contactNormal, Vector3 contactPoint)
-        {
-            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
-            Vector3 normal = Vector3.ProjectOnPlane(contactNormal, Vector3.up).normalized;
-            if (normal.sqrMagnitude < 0.01f) normal = -forward;
-
-            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
-            Vector3 contactOffset = Vector3.ProjectOnPlane(contactPoint - transform.position, Vector3.up);
-            float contactSide = Vector3.Dot(contactOffset, right);
-            impactEscapeSign = Mathf.Abs(contactSide) < 0.1f ? -1f : -Mathf.Sign(contactSide);
-            impactStartRotation = body.rotation;
-
-            // Always bias the response away and slightly backwards, even for a
-            // grazing hit whose contact normal points along the flight direction.
-            // Add a lateral component so cruise resumes on a clear line past the pylon.
-            Vector3 retreatDirection = (normal - forward * 0.65f + right * impactEscapeSign * 0.55f).normalized;
-            impactSeparationVelocity = retreatDirection * impactSeparationSpeed + Vector3.up * Mathf.Max(2f, verticalSpeed * 0.25f);
-            impactRecoveryTotal = impactSeparationDuration + impactRecoveryDuration;
-            impactRecoveryRemaining = impactRecoveryTotal;
+            bool thisIsAircraft = IsAircraftCollider(contact.thisCollider);
+            Collider ownCollider = thisIsAircraft ? contact.thisCollider : contact.otherCollider;
+            Collider obstacleCollider = thisIsAircraft ? contact.otherCollider : contact.thisCollider;
+            AirRacePylonCollisionProxy pylon = FindPylonProxy(contact);
+            if (pylon != null)
+            {
+                Collider[] pylonColliders = pylon.GetComponents<Collider>();
+                bool[] enabledStates = new bool[pylonColliders.Length];
+                for (int i = 0; i < pylonColliders.Length; i++)
+                {
+                    enabledStates[i] = pylonColliders[i] != null && pylonColliders[i].enabled;
+                    if (pylonColliders[i] != null) pylonColliders[i].enabled = false;
+                }
+                StartCoroutine(RestorePylonCollision(pylonColliders, enabledStates));
+            }
+            else if (ownCollider != null && obstacleCollider != null)
+            {
+                Physics.IgnoreCollision(ownCollider, obstacleCollider, true);
+                StartCoroutine(RestoreCollision(ownCollider, obstacleCollider));
+            }
 
             if (impactDamageCooldownRemaining <= 0f)
             {
                 if (AirRaceRunManager.Instance != null) AirRaceRunManager.Instance.HitPylon();
                 impactDamageCooldownRemaining = impactDamageCooldown;
             }
+        }
+
+        private IEnumerator RestoreCollision(Collider aircraftCollider, Collider obstacleCollider)
+        {
+            yield return new WaitForSeconds(0.62f);
+            if (aircraftCollider != null && obstacleCollider != null)
+                Physics.IgnoreCollision(aircraftCollider, obstacleCollider, false);
+        }
+
+        private IEnumerator RestorePylonCollision(Collider[] pylonColliders, bool[] enabledStates)
+        {
+            yield return new WaitForSeconds(0.82f);
+            for (int i = 0; i < pylonColliders.Length; i++)
+                if (pylonColliders[i] != null) pylonColliders[i].enabled = enabledStates[i];
+        }
+
+        private static AirRacePylonCollisionProxy FindPylonProxy(ContactPoint contact)
+        {
+            AirRacePylonCollisionProxy pylon = contact.thisCollider != null
+                ? contact.thisCollider.GetComponentInParent<AirRacePylonCollisionProxy>()
+                : null;
+            return pylon != null || contact.otherCollider == null
+                ? pylon
+                : contact.otherCollider.GetComponentInParent<AirRacePylonCollisionProxy>();
+        }
+
+        private bool IsAircraftCollider(Collider candidate)
+        {
+            return candidate != null && (candidate.transform == transform || candidate.transform.IsChildOf(transform));
         }
     }
 }
