@@ -7,10 +7,10 @@ namespace AirRace.Gameplay
     public sealed class AirRaceCameraRig : MonoBehaviour
     {
         [SerializeField] private Transform target;
-        [SerializeField] private Vector3 chaseOffset = new Vector3(-3.5f, 5.2f, -13.5f);
-        [SerializeField] private Vector3 closeOffset = new Vector3(-1.8f, 3.4f, -9f);
-        [SerializeField] private float followSmoothing = 5.5f;
-        [SerializeField] private float aimHeight = 0.65f;
+        [SerializeField] private Vector3 chaseOffset = new Vector3(0f, 22f, -17f);
+        [SerializeField] private Vector3 closeOffset = new Vector3(0f, 13f, -11f);
+        [SerializeField] private float followSmoothing = 6f;
+        [SerializeField] private float aimHeight = 1f;
         private Camera targetCamera;
         private bool closeCamera;
         private float defaultFov;
@@ -44,7 +44,7 @@ namespace AirRace.Gameplay
             Vector3 offset = closeCamera ? closeOffset : chaseOffset;
             Vector3 desired = target.position + target.rotation * offset;
             transform.position = Vector3.Lerp(transform.position, desired, followSmoothing * Time.deltaTime);
-            Vector3 lookPoint = target.position + target.forward * 6f + Vector3.up * aimHeight;
+            Vector3 lookPoint = target.position + target.forward * 12f + Vector3.up * aimHeight;
             Quaternion aim = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, aim, followSmoothing * Time.deltaTime);
         }

@@ -204,16 +204,16 @@ namespace AirRace.EditorTools
             var chaseCamObject = new GameObject("AirRace_Chase_Camera");
             chaseCamObject.tag = "MainCamera";
             var chaseCamera = chaseCamObject.AddComponent<Camera>();
-            chaseCamera.fieldOfView = 58f;
+            chaseCamera.fieldOfView = 62f;
             chaseCamera.nearClipPlane = 0.1f;
             // The ocean spans 4.8 km, but keep its edge outside the camera range
             // and fog horizon so the playable world never reveals a square cutoff.
             chaseCamera.farClipPlane = 1400f;
             var cameraRig = chaseCamObject.AddComponent<AirRace.Gameplay.AirRaceCameraRig>();
             cameraRig.SetTarget(plane.transform);
-            var chaseOffset = new Vector3(-3.5f, 5.2f, -13.5f);
-            var alternateOffset = new Vector3(-1.8f, 3.4f, -9f);
-            cameraRig.SetFraming(chaseOffset, alternateOffset, 5.5f, 0.65f);
+            var chaseOffset = new Vector3(0f, 22f, -17f);
+            var alternateOffset = new Vector3(0f, 13f, -11f);
+            cameraRig.SetFraming(chaseOffset, alternateOffset, 6f, 1f);
             EditorUtility.SetDirty(cameraRig);
             EditorUtility.SetDirty(chaseCamera);
             chaseCamObject.transform.position = plane.transform.TransformPoint(chaseOffset);
