@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:46Z" duration="2.1755715">
+  <test-suite type="TestSuite" id="1010" name="Air Race Ocean Run" fullname="Air Race Ocean Run" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:46Z" duration="2.175572" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1004" name="AirRace.PlayModeTests.dll" fullname="/private/tmp/AirRaceQAProject/Library/ScriptAssemblies/AirRace.PlayModeTests.dll" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:46Z" duration="2.171347" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="65803" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1005" name="AirRace" fullname="AirRace" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:46Z" duration="2.170770" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1006" name="Tests" fullname="AirRace.Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:46Z" duration="2.170470" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="AirRaceCollisionPlayModeTests" fullname="AirRace.Tests.AirRaceCollisionPlayModeTests" classname="AirRace.Tests.AirRaceCollisionPlayModeTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:46Z" duration="2.169912" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1002" name="Aircraft_HitsRealPylon_ReboundsAndReturnsToCruise" fullname="AirRace.Tests.AirRaceCollisionPlayModeTests.Aircraft_HitsRealPylon_ReboundsAndReturnsToCruise" methodname="Aircraft_HitsRealPylon_ReboundsAndReturnsToCruise" classname="AirRace.Tests.AirRaceCollisionPlayModeTests" runstate="Runnable" seed="2139228768" result="Passed" start-time="2026-11-19 00:58:43Z" end-time="2026-11-19 00:58:45Z" duration="1.512043" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[AIR_RACE_PLAYMODE_IMPACT: detected=0.06s, escapeSpeed=16.13m/s, energyCost=18.00, distance=5.26->19.08m, cruise=32.00m/s
+]]></output>
+            </test-case>
+            <test-case id="1003" name="ChaseCamera_SeesTheNextGateFromBehindAndAbove" fullname="AirRace.Tests.AirRaceCollisionPlayModeTests.ChaseCamera_SeesTheNextGateFromBehindAndAbove" methodname="ChaseCamera_SeesTheNextGateFromBehindAndAbove" classname="AirRace.Tests.AirRaceCollisionPlayModeTests" runstate="Runnable" seed="543599692" result="Passed" start-time="2026-11-19 00:58:45Z" end-time="2026-11-19 00:58:46Z" duration="0.651326" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[AIR_RACE_CAMERA_QA: next gate viewport=(0.35, 0.60), cameraOffset=(-18.63, 5.12, 4.23), directionY=-0.17
+Saving results to: /Users/linareina/Library/Application Support/DefaultCompany/Air Race Ocean Run/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
