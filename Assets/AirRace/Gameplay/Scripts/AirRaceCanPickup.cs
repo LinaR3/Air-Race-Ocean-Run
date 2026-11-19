@@ -7,7 +7,7 @@ namespace AirRace.Gameplay
         [SerializeField] private float bobHeight = 0.35f;
         [SerializeField] private float bobSpeed = 1.4f;
         [SerializeField] private float spinSpeed = 70f;
-        [SerializeField] private float revealDistance = 70f;
+        [SerializeField] private float revealDistance = 260f;
         [SerializeField] private Transform canVisual;
         private Vector3 startPosition;
         private Transform ringVisual;
@@ -51,7 +51,7 @@ namespace AirRace.Gameplay
             {
                 revealLight.enabled = proximity > 0f;
                 revealLight.intensity = 2f + pulse * 2f + proximity * 5f;
-                revealLight.range = 20f + proximity * 24f;
+                revealLight.range = 32f + proximity * 38f;
             }
 
             if (ringRenderer != null)

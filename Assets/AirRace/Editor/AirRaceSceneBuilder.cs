@@ -192,7 +192,8 @@ namespace AirRace.EditorTools
                 {
                     Vector3 next = gatePositions[(i + 1) % gatePositions.Length];
                     Vector3 pickupDirection = Vector3.ProjectOnPlane(next - gatePositions[i], Vector3.up).normalized;
-                    Vector3 pos = Vector3.Lerp(gatePositions[i], next, 0.5f) + Vector3.up * 7f;
+                    // Keep each reward on the visible flight corridor, not above or behind a gate.
+                    Vector3 pos = Vector3.Lerp(gatePositions[i], next, 0.52f) + Vector3.up * 2.5f;
                     var pickup = (GameObject)PrefabUtility.InstantiatePrefab(canPrefab, scene);
                     pickup.name = "Energy_Can_" + (i + 1).ToString("00");
                     pickup.transform.SetParent(pickupRoot.transform, true);
@@ -211,13 +212,12 @@ namespace AirRace.EditorTools
             chaseCamera.farClipPlane = 1400f;
             var cameraRig = chaseCamObject.AddComponent<AirRace.Gameplay.AirRaceCameraRig>();
             cameraRig.SetTarget(plane.transform);
-            var chaseOffset = new Vector3(0f, 22f, -17f);
-            var alternateOffset = new Vector3(0f, 13f, -11f);
-            cameraRig.SetFraming(chaseOffset, alternateOffset, 6f, 1f);
+            var chaseOffset = new Vector3(0f, 4.2f, -14f);
+            cameraRig.SetFraming(chaseOffset, 4.5f, 2.2f, 30f);
             EditorUtility.SetDirty(cameraRig);
             EditorUtility.SetDirty(chaseCamera);
             chaseCamObject.transform.position = plane.transform.TransformPoint(chaseOffset);
-            chaseCamObject.transform.LookAt(plane.transform.position + plane.transform.forward * 7f + Vector3.up * 0.65f);
+            chaseCamObject.transform.LookAt(plane.transform.position + plane.transform.forward * 20f + Vector3.up * 2.2f);
 
             var mapCam = new GameObject("Map_Preview_Camera").AddComponent<Camera>();
             mapCam.name = "Map_Preview_Camera";
