@@ -16,6 +16,10 @@ namespace AirRace.Gameplay
         [SerializeField] private float maximumAltitude = 70f;
         [SerializeField] private float waterLine = -4.5f;
         [SerializeField] private float worldBoundaryHalfExtent = 900f;
+        [SerializeField] private float impactSeparationDuration = 0.28f;
+        [SerializeField] private float impactRecoveryDuration = 0.22f;
+        [SerializeField] private float impactSeparationSpeed = 17f;
+        [SerializeField] private float impactDamageCooldown = 0.65f;
 
         private Rigidbody body;
         private float pitchInput;
@@ -31,6 +35,13 @@ namespace AirRace.Gameplay
         private bool crashed;
         private int queuedRolls;
         private float stuntLiftVelocity;
+        private Vector3 impactSeparationVelocity;
+        private float impactRecoveryRemaining;
+        private float impactRecoveryTotal;
+        private float impactDamageCooldownRemaining;
+        private static PhysicsMaterial pylonContactMaterial;
+
+        public bool IsRecoveringFromImpact => impactRecoveryRemaining > 0f;
 
         public void SetVisualRoot(Transform root) => visualRoot = root;
 
@@ -42,6 +53,27 @@ namespace AirRace.Gameplay
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             body.constraints = RigidbodyConstraints.None;
             if (visualRoot == null && transform.childCount > 0) visualRoot = transform.GetChild(0);
+            ApplyPylonContactMaterial();
+        }
+
+        private static void ApplyPylonContactMaterial()
+        {
+            if (pylonContactMaterial == null)
+            {
+                pylonContactMaterial = new PhysicsMaterial("AirRace_Pylon_LowFriction")
+                {
+                    dynamicFriction = 0f,
+                    staticFriction = 0f,
+                    bounciness = 0.05f,
+                    frictionCombine = PhysicsMaterialCombine.Minimum,
+                    bounceCombine = PhysicsMaterialCombine.Average
+                };
+            }
+
+            foreach (Collider collider in FindObjectsByType<Collider>(FindObjectsSortMode.None))
+            {
+                if (collider.gameObject.name.StartsWith("Pylon_")) collider.sharedMaterial = pylonContactMaterial;
+            }
         }
 
         private void Update()
@@ -75,6 +107,29 @@ namespace AirRace.Gameplay
             if (crashed || (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.State != RaceState.Racing))
             {
                 body.linearVelocity = Vector3.zero;
+                return;
+            }
+
+            impactDamageCooldownRemaining = Mathf.Max(0f, impactDamageCooldownRemaining - Time.fixedDeltaTime);
+
+            if (impactRecoveryRemaining > 0f)
+            {
+                impactRecoveryRemaining = Mathf.Max(0f, impactRecoveryRemaining - Time.fixedDeltaTime);
+                if (impactRecoveryRemaining > impactRecoveryTotal - impactSeparationDuration)
+                {
+                    // Hold the outward impulse briefly. Normal cruise velocity is
+                    // otherwise reassigned every physics tick and pins the plane
+                    // against the collider before it can separate.
+                    body.linearVelocity = impactSeparationVelocity;
+                }
+                else
+                {
+                    float blend = 1f - impactRecoveryRemaining / Mathf.Max(0.01f, impactRecoveryTotal - impactSeparationDuration);
+                    float recoveryCruiseSpeed = cruiseSpeed;
+                    if (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.IsBoosting) recoveryCruiseSpeed *= boostSpeedMultiplier;
+                    Vector3 cruiseVelocity = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized * recoveryCruiseSpeed + Vector3.up * verticalSpeed;
+                    body.linearVelocity = Vector3.Lerp(impactSeparationVelocity, cruiseVelocity, Mathf.SmoothStep(0f, 1f, blend));
+                }
                 return;
             }
 
@@ -157,9 +212,28 @@ namespace AirRace.Gameplay
         private void OnCollisionEnter(Collision collision)
         {
             if (crashed) return;
-            Vector3 normal = collision.GetContact(0).normal;
-            body.linearVelocity = Vector3.Reflect(body.linearVelocity, normal) * 0.55f - transform.forward * 4f;
-            if (AirRaceRunManager.Instance != null) AirRaceRunManager.Instance.HitPylon();
+            if (collision.contactCount == 0) return;
+            BeginImpactRecovery(collision.GetContact(0).normal);
+        }
+
+        private void BeginImpactRecovery(Vector3 contactNormal)
+        {
+            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            Vector3 normal = Vector3.ProjectOnPlane(contactNormal, Vector3.up).normalized;
+            if (normal.sqrMagnitude < 0.01f) normal = -forward;
+
+            // Always bias the response away and slightly backwards, even for a
+            // grazing hit whose contact normal points along the flight direction.
+            Vector3 retreatDirection = (normal - forward * 0.65f).normalized;
+            impactSeparationVelocity = retreatDirection * impactSeparationSpeed + Vector3.up * Mathf.Max(2f, verticalSpeed * 0.25f);
+            impactRecoveryTotal = impactSeparationDuration + impactRecoveryDuration;
+            impactRecoveryRemaining = impactRecoveryTotal;
+
+            if (impactDamageCooldownRemaining <= 0f)
+            {
+                if (AirRaceRunManager.Instance != null) AirRaceRunManager.Instance.HitPylon();
+                impactDamageCooldownRemaining = impactDamageCooldown;
+            }
         }
     }
 }

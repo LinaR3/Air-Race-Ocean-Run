@@ -23,6 +23,7 @@ namespace AirRace.Gameplay
         public float Energy { get; private set; } = 72f;
         public float TimeRemaining { get; private set; }
         public float BoostTimeRemaining { get; private set; }
+        public float ImpactFeedbackRemaining { get; private set; }
         public int Combo { get; private set; }
         public string EndReason { get; private set; }
         public int CheckpointCount => checkpointCount;
@@ -43,6 +44,7 @@ namespace AirRace.Gameplay
         {
             if (State != RaceState.Racing) return;
 
+            ImpactFeedbackRemaining = Mathf.Max(0f, ImpactFeedbackRemaining - Time.deltaTime);
             comboWindowRemaining = Mathf.Max(0f, comboWindowRemaining - Time.deltaTime);
 
             TimeRemaining = Mathf.Max(0f, TimeRemaining - Time.deltaTime);
@@ -97,7 +99,9 @@ namespace AirRace.Gameplay
 
         public void HitPylon()
         {
-            if (State == RaceState.Racing) Energy = Mathf.Max(1f, Energy - 18f);
+            if (State != RaceState.Racing) return;
+            Energy = Mathf.Max(1f, Energy - 18f);
+            ImpactFeedbackRemaining = 1.1f;
         }
 
         public void TryFinish()
@@ -127,6 +131,12 @@ namespace AirRace.Gameplay
                 GUI.color = new Color(1f, 0.76f, 0.05f);
                 GUI.Box(new Rect(27, 191, 214f * Energy / 100f, 8), GUIContent.none);
                 GUI.color = Color.white;
+                if (ImpactFeedbackRemaining > 0f)
+                {
+                    GUI.color = new Color(1f, 0.45f, 0.12f);
+                    GUI.Label(new Rect(Screen.width * 0.5f - 100f, 42f, 200f, 32f), "IMPACT · REBOUND");
+                    GUI.color = Color.white;
+                }
             }
             else
             {
