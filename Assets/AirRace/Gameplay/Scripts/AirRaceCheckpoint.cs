@@ -7,6 +7,7 @@ namespace AirRace.Gameplay
         [SerializeField] private int checkpointIndex;
         private bool completed;
 
+        public int Index => checkpointIndex;
         public void Initialize(int index) => checkpointIndex = index;
 
         private void OnTriggerEnter(Collider other)
