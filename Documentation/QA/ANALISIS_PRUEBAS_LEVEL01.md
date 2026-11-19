@@ -10,45 +10,50 @@ La carrera usa un avión de 32 m/s, seis checkpoints a 200–206 m entre centros
 
 `OnCollisionEnter` calculaba un rebote, pero `FixedUpdate` reescribía la velocidad del avión hacia delante en el siguiente paso de física. Así el avión podía quedar empujando contra el pilón, sin tiempo para separarse. El prefab del pilón también usa colliders de malla en varias bandas, lo que puede producir contactos menos suaves que un solo collider primitivo.
 
-La respuesta ahora conserva el impulso de salida durante 0,28 s, vuelve gradualmente al vuelo normal durante 0,22 s, usa una superficie de contacto de fricción mínima en los colliders llamados `Pylon_*`, limita el daño repetido y muestra `IMPACT · REBOUND` durante 1,1 s. La lata se hizo 20 % mayor y el anillo pasó de 10,4 m a 13 m de diámetro exterior para leerse mejor sobre el mar.
+La respuesta conserva el impulso de salida durante 0,28 s, vuelve gradualmente al vuelo normal durante 0,22 s y gira el avión 30° hacia una trayectoria de escape. La prueba encontró que solo rebotar hacia atrás podía dejarlo alineado para volver a tocar el mismo pilón; la corrección incluye una evasión lateral. Cada pilón desactiva sus bandas de colisión por malla y genera una cápsula para el cono y una caja para el flotador, ambos con fricción mínima. El daño tiene un enfriamiento de 0,65 s y el HUD muestra `IMPACT · REBOUND` durante 1,1 s. La lata se hizo 20 % mayor y el anillo pasó de 10,4 m a 13 m de diámetro exterior.
 
 ## Pruebas ejecutadas en Unity 6.3
 
-Ejecuté la escena en una copia aislada del proyecto para no cambiar la escena abierta en el editor. La simulación de física midió:
+Ejecuté las pruebas de Unity Play Mode en una copia aislada del proyecto. El choque ocurrió mediante el callback real `OnCollisionEnter` contra el prefab del pilón, no mediante una invocación simulada del método. También se comprobó el encuadre de cámara:
 
 | Prueba | Resultado |
 | --- | ---: |
 | Avance recto durante 1 s | 32,00 m |
 | Giro a la derecha durante 0,5 s | 17,00° |
 | Ascenso durante 0,5 s | 2,30 m |
-| Raycast hacia el collider de `Pylon_01_Left` | Detectado |
-| Respuesta de separación después de aplicar el impacto | 3,86 m a los 0,08 s |
-| Separación tras 1,3 s y vuelta a crucero | 23,58 m; 32,00 m/s |
+| Contacto real con el pilón, callback | Detectado a los 0,06 s |
+| Velocidad de salida en dirección opuesta | 16,13 m/s |
+| Penalización de un impacto | 18 de energía, una vez |
+| Distancia al pilón al iniciar el escape → tras 1,2 s | 5,26 → 19,08 m |
+| Velocidad tras terminar la recuperación | 32,00 m/s |
+| Colliders del pilón | 1 cápsula + 1 caja; bandas mesh desactivadas |
+| Cámara: siguiente puerta en pantalla | viewport (0,35; 0,60), delante del avión |
 
-La prueba automatizada ejecutó la misma rutina de recuperación llamada por el callback de colisión, usando la normal de impacto esperada. El raycast alcanzó el collider real del prefab. La consulta de solape en esta escena aislada no registró intersección y Unity en modo batch no ejecuta el callback de colisión del `MonoBehaviour` como Play Mode interactivo; por eso no doy por verificado el callback real de extremo a extremo. La ruta de recuperación sí quedó medida, pero hace falta confirmar un choque conducido en Play Mode gráfico cuando vuelva a estar disponible el editor.
+Las dos pruebas de Play Mode pasaron: choque y rebote, y encuadre de cámara. El resultado queda en [airrace-playmode-test-results.xml](airrace-playmode-test-results.xml); el test reproducible está en `Assets/AirRace/Tests/PlayMode`.
 
 ![Captura de la escena de prueba con avión y pilones](unity-collision-recovery.png)
 
 Resultados numéricos: [unity-mobility-collision-results.txt](unity-mobility-collision-results.txt).
 
-## Cinco mejoras aplicadas
+## Ocho mejoras aplicadas
 
 1. Mantener el impulso de separación del avión antes de restablecer velocidad de crucero.
 2. Aplicar fricción mínima a los colliders de las piezas del pilón para reducir el enganche en las uniones de malla.
 3. Poner un enfriamiento de 0,65 s al daño por impacto para que un mismo roce no descuente energía varias veces.
 4. Dar señal visible de impacto y rebote durante 1,1 s.
 5. Aumentar la legibilidad de la lata y su aro de energía para distinguirlos mejor a distancia.
+6. Simplificar la colisión del pilón a una cápsula para el cono y una caja para el flotador, conservando el modelo visual.
+7. Probar un choque real de Play Mode, detectar el segundo impacto que ocurría al volver a apuntar al pilón y añadir un desvío de 30°.
+8. Acercar y elevar un poco la cámara, acelerar su seguimiento y confirmar que la puerta siguiente queda dentro del encuadre.
 
-## Siete recomendaciones siguientes
+## Siguientes prioridades
 
-1. **Revisar la cámara de persecución:** en la captura el avión ocupa poco espacio y los pilones cercanos pueden dominar el encuadre. Probar una cámara algo más próxima, desplazada lateralmente y con seguimiento amortiguado en los giros.
-2. **Simplificar la colisión de los pilones:** sustituir las bandas de malla por un collider suave para el cono y otro para el flotador, manteniendo intactos los modelos visibles. El material de baja fricción ayuda, pero no elimina la complejidad geométrica.
-3. **Probar impactos por partes y velocidad:** nariz, punta de ala y tren de aterrizaje; aproximación lenta y rápida; contacto frontal y lateral. Medir que siempre haya separación y no se repita el daño durante el mismo golpe.
-4. **Reemplazar el HUD temporal:** la interfaz actual usa `OnGUI`; llevar cronómetro, energía, puntos y checkpoint a una interfaz diseñada para pantalla grande y legible a distancia.
-5. **Ajustar energía con una vuelta completa:** ahora la energía inicial es 72 y pierde 3,5 por segundo fuera del impulso; revisar el margen si el jugador falla un checkpoint o toma una curva amplia.
-6. **Mejorar la lectura de la ruta:** distinguir visualmente el checkpoint activo, el siguiente y la meta, y añadir una señal clara cuando el jugador lo atraviesa fuera de orden.
-7. **Añadir referencias de escala al horizonte:** el mar y el cielo ya ocultan el borde del tile, pero una costa o siluetas lejanas discretas ayudarían a que el escenario no se sienta vacío sin competir con el recorrido.
+1. **Balancear energía en una vuelta con control manual:** la geometría da aproximadamente 1.339 m, 41,8 s a 32 m/s y 72–82 de energía al llegar con los seis checkpoints; esa estimación ideal deja margen y no justifica subir el drenaje todavía. Hay que repetir la vuelta con correcciones reales, una puerta perdida y uso de latas.
+2. **Aclarar la ruta y la meta:** resaltar puerta activa, siguiente puerta y llegada; mostrar feedback cuando una puerta se atraviese fuera de orden.
+3. **Reemplazar el HUD temporal:** llevar tiempo, energía, puntos y checkpoint a una interfaz legible en pantallas grandes.
+4. **Dar escala al horizonte:** añadir costa o siluetas lejanas discretas sin competir con el recorrido.
+5. **Ampliar la matriz de choques:** probar lateral, ala, nariz y flotador a distintas alturas y velocidades, además de impactos repetidos.
 
 ## Límite de la verificación
 
-`dotnet build Assembly-CSharp.csproj --no-restore` pasó con 0 errores y 0 advertencias después de restaurar los assets de NuGet del proyecto. La validación de contacto real del avión contra el pilón dentro de Play Mode gráfico queda pendiente; el editor conectado estaba en una ejecución anterior y no pude tomar control de esa ventana tras interrumpirse la sesión de automatización.
+`dotnet build Assembly-CSharp.csproj --no-restore` y `dotnet build Assembly-CSharp-Editor.csproj --no-restore` pasaron con 0 errores y 0 advertencias después de restaurar los assets NuGet del proyecto. Play Mode se ejecutó con el Test Framework de Unity en una copia aislada; la escena abierta de la usuaria no se regeneró ni se modificó durante las pruebas.
