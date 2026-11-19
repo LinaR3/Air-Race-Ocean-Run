@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace AirRace.Tests
 {
@@ -107,7 +108,7 @@ namespace AirRace.Tests
         }
 
         [UnityTest]
-        public IEnumerator ChaseCamera_SeesTheNextGateFromBehindAndAbove()
+        public IEnumerator ChaseCamera_UsesCenteredElevatedAngleAndSeesTheNextGate()
         {
             SceneManager.LoadScene(SceneName);
             yield return new WaitForSeconds(0.5f);
@@ -123,12 +124,69 @@ namespace AirRace.Tests
             Assert.That(Vector3.Dot(offset, -aircraft.transform.forward), Is.GreaterThan(8f), "Camera should stay behind the aircraft.");
             Assert.That(offset.y, Is.GreaterThan(2f), "Camera should be elevated above the aircraft.");
             Assert.That(camera.transform.forward.y, Is.LessThan(0f), "Camera should look slightly down toward the route.");
+            Assert.That(Mathf.Abs(Vector3.Dot(offset, aircraft.transform.right)), Is.LessThan(1.5f),
+                "The main view should be centered over the aircraft, not off to one side.");
+            Assert.That(camera.transform.forward.y, Is.LessThan(-0.25f), "The main camera should read as a clearly elevated view.");
 
             Vector3 gateOnScreen = camera.WorldToViewportPoint(nextGate.transform.position);
             Assert.That(gateOnScreen.z, Is.GreaterThan(0f), "The next gate should be in front of the camera.");
             Assert.That(gateOnScreen.x, Is.InRange(0.05f, 0.95f), "The next gate should stay inside the horizontal frame.");
+            Assert.That(gateOnScreen.y, Is.InRange(0.05f, 0.95f), "The next gate should stay inside the vertical frame.");
             Debug.Log($"AIR_RACE_CAMERA_QA: next gate viewport=({gateOnScreen.x:0.00}, {gateOnScreen.y:0.00}), " +
                       $"cameraOffset={offset}, directionY={camera.transform.forward.y:0.00}");
+        }
+
+        [UnityTest]
+        public IEnumerator RaceHud_ShowsAndAdvancesCheckpointNumber()
+        {
+            SceneManager.LoadScene(SceneName);
+            yield return null;
+            yield return null;
+
+            GameObject hudCanvas = GameObject.Find("AirRace_HUD_Canvas");
+            GameObject checkpointLabel = GameObject.Find("CHECKPOINT_VALUE");
+            Assert.That(hudCanvas, Is.Not.Null, "The temporary OnGUI display should be replaced by a screen-space HUD.");
+            Assert.That(checkpointLabel, Is.Not.Null);
+            Text checkpointText = checkpointLabel.GetComponent<Text>();
+            Assert.That(checkpointText.text, Is.EqualTo("01  /  06"));
+
+            GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
+            MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { 0 });
+            yield return null;
+            Assert.That(checkpointText.text, Is.EqualTo("02  /  06"), "The HUD should display the next active checkpoint.");
+        }
+
+        [UnityTest]
+        public IEnumerator EnergyCan_IsReadableAndEasyToCollect()
+        {
+            SceneManager.LoadScene(SceneName);
+            yield return null;
+            yield return null;
+
+            GameObject pickup = GameObject.Find("Energy_Can_01");
+            Assert.That(pickup, Is.Not.Null);
+            SphereCollider pickupRange = pickup.GetComponent<SphereCollider>();
+            Assert.That(pickupRange, Is.Not.Null);
+            Assert.That(pickupRange.radius, Is.GreaterThanOrEqualTo(10f), "The collection radius should be forgiving.");
+            Transform canVisual = pickup.transform.Find("Can_Visual");
+            Transform ring = pickup.transform.Find("Energy_Visibility_Ring");
+            Light beacon = pickup.GetComponentInChildren<Light>(true);
+            Assert.That(canVisual.localScale.x, Is.GreaterThanOrEqualTo(1.6f), "The can should read larger than before.");
+            Assert.That(ring, Is.Not.Null);
+            Assert.That(beacon, Is.Not.Null);
+            GameObject aircraft = GameObject.Find("Aircraft_Player");
+            MonoBehaviour flightController = aircraft.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AircraftFlightController");
+            flightController.enabled = false;
+            Vector3 nearPosition = pickup.transform.position + Vector3.right * 35f;
+            aircraft.GetComponent<Rigidbody>().position = nearPosition;
+            aircraft.transform.position = nearPosition;
+            Physics.SyncTransforms();
+            yield return null;
+            Assert.That(beacon.enabled, Is.True, "The beacon should turn on as the player approaches.");
+            Assert.That(beacon.range, Is.GreaterThan(20f));
         }
     }
 }

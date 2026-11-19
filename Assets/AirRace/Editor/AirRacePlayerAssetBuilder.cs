@@ -30,6 +30,17 @@ namespace AirRace.EditorTools
             Debug.Log("Built playable aircraft and energy-can prefabs.");
         }
 
+        [MenuItem("Air Race/Build Energy Can Prefab Only")]
+        public static void BuildCanOnly()
+        {
+            EnsureFolder(OutputFolder);
+            EnsureFolder("Assets/AirRace/Art/Models/Aircraft/Generated");
+            BuildCan();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("Built enlarged, illuminated energy-can pickup prefab.");
+        }
+
         private static void BuildAircraft()
         {
             var source = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
@@ -109,7 +120,7 @@ namespace AirRace.EditorTools
 
             var canVisual = new GameObject("Can_Visual");
             canVisual.transform.SetParent(root.transform, false);
-            canVisual.transform.localScale = Vector3.one * 1.2f;
+            canVisual.transform.localScale = Vector3.one * 1.6f;
             var body = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             body.name = "LowPoly_Blue_Can";
             body.transform.SetParent(canVisual.transform, false);
@@ -141,9 +152,18 @@ namespace AirRace.EditorTools
             ring.AddComponent<MeshFilter>().sharedMesh = ringMesh;
             ring.AddComponent<MeshRenderer>().sharedMaterial = glowMat;
 
+            var beacon = new GameObject("Pickup_Proximity_Beacon");
+            beacon.transform.SetParent(root.transform, false);
+            var beaconLight = beacon.AddComponent<Light>();
+            beaconLight.type = LightType.Point;
+            beaconLight.color = new Color(1f, 0.72f, 0.08f);
+            beaconLight.range = 44f;
+            beaconLight.intensity = 5f;
+            beaconLight.shadows = LightShadows.None;
+
             var trigger = root.AddComponent<SphereCollider>();
             trigger.isTrigger = true;
-            trigger.radius = 6.5f;
+            trigger.radius = 10f;
             root.AddComponent<AirRaceCanPickup>().SetCanVisual(canVisual.transform);
             PrefabUtility.SaveAsPrefabAsset(root, CanPath);
             UnityEngine.Object.DestroyImmediate(root);
@@ -153,10 +173,9 @@ namespace AirRace.EditorTools
         {
             const int segments = 48;
             const int sides = 10;
-            // The original 10.4 m ring was hard to read against the wide ocean.
-            // A 13 m ring makes the pickup legible earlier without dominating a gate.
-            const float radius = 6.5f;
-            const float tubeRadius = 0.46f;
+            // A broad, luminous ring makes the pickup easy to identify and collect from a readable approach.
+            const float radius = 8.5f;
+            const float tubeRadius = 0.58f;
             var vertices = new Vector3[segments * sides];
             var triangles = new int[segments * sides * 6];
             for (int i = 0; i < segments; i++)
