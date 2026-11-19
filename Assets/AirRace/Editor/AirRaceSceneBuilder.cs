@@ -211,9 +211,9 @@ namespace AirRace.EditorTools
             chaseCamera.farClipPlane = 1400f;
             var cameraRig = chaseCamObject.AddComponent<AirRace.Gameplay.AirRaceCameraRig>();
             cameraRig.SetTarget(plane.transform);
-            var chaseOffset = new Vector3(-5f, 4.5f, -16f);
-            var alternateOffset = new Vector3(-2.5f, 3f, -11f);
-            cameraRig.SetFraming(chaseOffset, alternateOffset, 3.8f, 0.65f);
+            var chaseOffset = new Vector3(-3.5f, 5.2f, -13.5f);
+            var alternateOffset = new Vector3(-1.8f, 3.4f, -9f);
+            cameraRig.SetFraming(chaseOffset, alternateOffset, 5.5f, 0.65f);
             EditorUtility.SetDirty(cameraRig);
             EditorUtility.SetDirty(chaseCamera);
             chaseCamObject.transform.position = plane.transform.TransformPoint(chaseOffset);
