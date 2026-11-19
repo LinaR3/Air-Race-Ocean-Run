@@ -20,6 +20,7 @@ namespace AirRace.Gameplay
         [SerializeField] private float impactRecoveryDuration = 0.22f;
         [SerializeField] private float impactSeparationSpeed = 17f;
         [SerializeField] private float impactDamageCooldown = 0.65f;
+        [SerializeField] private float impactAvoidanceAngle = 30f;
 
         private Rigidbody body;
         private float pitchInput;
@@ -39,7 +40,8 @@ namespace AirRace.Gameplay
         private float impactRecoveryRemaining;
         private float impactRecoveryTotal;
         private float impactDamageCooldownRemaining;
-        private static PhysicsMaterial pylonContactMaterial;
+        private Quaternion impactStartRotation;
+        private float impactEscapeSign;
 
         public bool IsRecoveringFromImpact => impactRecoveryRemaining > 0f;
 
@@ -53,27 +55,6 @@ namespace AirRace.Gameplay
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             body.constraints = RigidbodyConstraints.None;
             if (visualRoot == null && transform.childCount > 0) visualRoot = transform.GetChild(0);
-            ApplyPylonContactMaterial();
-        }
-
-        private static void ApplyPylonContactMaterial()
-        {
-            if (pylonContactMaterial == null)
-            {
-                pylonContactMaterial = new PhysicsMaterial("AirRace_Pylon_LowFriction")
-                {
-                    dynamicFriction = 0f,
-                    staticFriction = 0f,
-                    bounciness = 0.05f,
-                    frictionCombine = PhysicsMaterialCombine.Minimum,
-                    bounceCombine = PhysicsMaterialCombine.Average
-                };
-            }
-
-            foreach (Collider collider in FindObjectsByType<Collider>(FindObjectsSortMode.None))
-            {
-                if (collider.gameObject.name.StartsWith("Pylon_")) collider.sharedMaterial = pylonContactMaterial;
-            }
         }
 
         private void Update()
@@ -115,6 +96,9 @@ namespace AirRace.Gameplay
             if (impactRecoveryRemaining > 0f)
             {
                 impactRecoveryRemaining = Mathf.Max(0f, impactRecoveryRemaining - Time.fixedDeltaTime);
+                float turnProgress = 1f - impactRecoveryRemaining / Mathf.Max(0.01f, impactRecoveryTotal);
+                float turnAngle = impactEscapeSign * impactAvoidanceAngle * Mathf.SmoothStep(0f, 1f, turnProgress);
+                body.MoveRotation(Quaternion.AngleAxis(turnAngle, Vector3.up) * impactStartRotation);
                 if (impactRecoveryRemaining > impactRecoveryTotal - impactSeparationDuration)
                 {
                     // Hold the outward impulse briefly. Normal cruise velocity is
@@ -213,18 +197,27 @@ namespace AirRace.Gameplay
         {
             if (crashed) return;
             if (collision.contactCount == 0) return;
-            BeginImpactRecovery(collision.GetContact(0).normal);
+            if (impactRecoveryRemaining > 0f) return;
+            ContactPoint contact = collision.GetContact(0);
+            BeginImpactRecovery(contact.normal, contact.point);
         }
 
-        private void BeginImpactRecovery(Vector3 contactNormal)
+        private void BeginImpactRecovery(Vector3 contactNormal, Vector3 contactPoint)
         {
             Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
             Vector3 normal = Vector3.ProjectOnPlane(contactNormal, Vector3.up).normalized;
             if (normal.sqrMagnitude < 0.01f) normal = -forward;
 
+            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+            Vector3 contactOffset = Vector3.ProjectOnPlane(contactPoint - transform.position, Vector3.up);
+            float contactSide = Vector3.Dot(contactOffset, right);
+            impactEscapeSign = Mathf.Abs(contactSide) < 0.1f ? -1f : -Mathf.Sign(contactSide);
+            impactStartRotation = body.rotation;
+
             // Always bias the response away and slightly backwards, even for a
             // grazing hit whose contact normal points along the flight direction.
-            Vector3 retreatDirection = (normal - forward * 0.65f).normalized;
+            // Add a lateral component so cruise resumes on a clear line past the pylon.
+            Vector3 retreatDirection = (normal - forward * 0.65f + right * impactEscapeSign * 0.55f).normalized;
             impactSeparationVelocity = retreatDirection * impactSeparationSpeed + Vector3.up * Mathf.Max(2f, verticalSpeed * 0.25f);
             impactRecoveryTotal = impactSeparationDuration + impactRecoveryDuration;
             impactRecoveryRemaining = impactRecoveryTotal;
