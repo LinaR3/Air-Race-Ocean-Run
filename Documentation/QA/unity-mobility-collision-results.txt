@@ -1,0 +1,10 @@
+Movement forward 1.0s: 32.00 m
+Yaw right 0.5s: 17.00 degrees
+Climb 0.5s: 2.30 m
+Impact recovery code path invoked: True
+Ray hits real pylon collider: True
+Aircraft overlaps a pylon collider: False
+Physics overlap query detects pylon: False
+Distance from pylon at recovery: 3.86 m
+Distance from pylon after 1.3s: 23.58 m
+Aircraft speed after recovery: 32.00 m/s
