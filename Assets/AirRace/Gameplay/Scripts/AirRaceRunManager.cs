@@ -38,6 +38,7 @@ namespace AirRace.Gameplay
             }
             Instance = this;
             TimeRemaining = durationSeconds;
+            gameObject.AddComponent<AirRaceHUD>().Initialize(this);
         }
 
         private void Update()
@@ -115,35 +116,6 @@ namespace AirRace.Gameplay
             if (State != RaceState.Racing) return;
             State = RaceState.Failed;
             EndReason = reason;
-        }
-
-        private void OnGUI()
-        {
-            if (State == RaceState.Racing)
-            {
-                GUI.color = Color.white;
-                GUI.Label(new Rect(24, 18, 260, 34), $"TIME  {Mathf.CeilToInt(TimeRemaining):00}");
-                GUI.Label(new Rect(24, 52, 260, 34), $"GATES  {NextCheckpoint}/{checkpointCount}");
-                GUI.Label(new Rect(24, 86, 260, 34), $"SCORE  {Score}");
-                GUI.Label(new Rect(24, 120, 260, 34), $"FLIGHT  {Mathf.CeilToInt(Energy)}%   BOOSTS  {BoostCharges}");
-                GUI.Label(new Rect(24, 154, 260, 34), IsBoosting ? $"BOOST  {BoostTimeRemaining:0.0}s   COMBO x{Combo}" : "WASD fly · Space boost · C camera");
-                GUI.Box(new Rect(24, 188, 220, 14), GUIContent.none);
-                GUI.color = new Color(1f, 0.76f, 0.05f);
-                GUI.Box(new Rect(27, 191, 214f * Energy / 100f, 8), GUIContent.none);
-                GUI.color = Color.white;
-                if (ImpactFeedbackRemaining > 0f)
-                {
-                    GUI.color = new Color(1f, 0.45f, 0.12f);
-                    GUI.Label(new Rect(Screen.width * 0.5f - 100f, 42f, 200f, 32f), "IMPACT · REBOUND");
-                    GUI.color = Color.white;
-                }
-            }
-            else
-            {
-                string title = State == RaceState.Won ? "RACE COMPLETE" : "FLIGHT ENDED";
-                string reason = State == RaceState.Won ? $"Score: {Score}    Time: {Mathf.CeilToInt(TimeRemaining)}s" : EndReason;
-                GUI.Box(new Rect(Screen.width * 0.5f - 180, Screen.height * 0.5f - 58, 360, 116), title + "\n\n" + reason + "\n\nPress R to retry");
-            }
         }
 
         public void Restart()
