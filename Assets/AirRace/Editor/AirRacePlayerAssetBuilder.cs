@@ -109,6 +109,7 @@ namespace AirRace.EditorTools
 
             var canVisual = new GameObject("Can_Visual");
             canVisual.transform.SetParent(root.transform, false);
+            canVisual.transform.localScale = Vector3.one * 1.2f;
             var body = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             body.name = "LowPoly_Blue_Can";
             body.transform.SetParent(canVisual.transform, false);
@@ -142,7 +143,7 @@ namespace AirRace.EditorTools
 
             var trigger = root.AddComponent<SphereCollider>();
             trigger.isTrigger = true;
-            trigger.radius = 6f;
+            trigger.radius = 6.5f;
             root.AddComponent<AirRaceCanPickup>().SetCanVisual(canVisual.transform);
             PrefabUtility.SaveAsPrefabAsset(root, CanPath);
             UnityEngine.Object.DestroyImmediate(root);
@@ -152,8 +153,10 @@ namespace AirRace.EditorTools
         {
             const int segments = 48;
             const int sides = 10;
-            const float radius = 5.2f;
-            const float tubeRadius = 0.36f;
+            // The original 10.4 m ring was hard to read against the wide ocean.
+            // A 13 m ring makes the pickup legible earlier without dominating a gate.
+            const float radius = 6.5f;
+            const float tubeRadius = 0.46f;
             var vertices = new Vector3[segments * sides];
             var triangles = new int[segments * sides * 6];
             for (int i = 0; i < segments; i++)
