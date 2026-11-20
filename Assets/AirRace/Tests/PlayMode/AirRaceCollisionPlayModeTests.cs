@@ -230,6 +230,96 @@ namespace AirRace.Tests
             Assert.That((float)time.GetValue(manager), Is.LessThan(initialTime));
         }
 
+        [UnityTest]
+        public IEnumerator Race_MenuPauseAndResultsExposeWorkingButtons_AndPauseFreezesTimer()
+        {
+            SceneManager.LoadScene(SceneName);
+            yield return null;
+            yield return null;
+
+            GameObject play = GameObject.Find("START_PLAY");
+            Assert.That(play, Is.Not.Null, "The main menu must have a real Play button.");
+            Assert.That(GameObject.Find("START_OPTIONS"), Is.Not.Null);
+            Assert.That(GameObject.Find("START_EXIT"), Is.Not.Null);
+            GameObject.Find("START_OPTIONS").GetComponent<Button>().onClick.Invoke();
+            Assert.That(GameObject.Find("OPTIONS_TITLE"), Is.Not.Null, "Options must open from the main menu.");
+            Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "OPTIONS_BACK").onClick.Invoke();
+            GameObject.Find("START_EXIT").GetComponent<Button>().onClick.Invoke();
+            Assert.That(GameObject.Find("EXIT_NOTICE"), Is.Not.Null, "Web exit must explain how to leave the game.");
+            Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "EXIT_BACK").onClick.Invoke();
+            play.GetComponent<Button>().onClick.Invoke();
+
+            GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
+            MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            PropertyInfo state = manager.GetType().GetProperty("State");
+            PropertyInfo timer = manager.GetType().GetProperty("TimeRemaining");
+            manager.GetType().GetProperty("CountdownRemaining").SetValue(manager, 0f);
+            yield return null;
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Racing"));
+
+            GameObject pause = GameObject.Find("PAUSE_BUTTON");
+            Assert.That(pause, Is.Not.Null);
+            pause.GetComponent<Button>().onClick.Invoke();
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Paused"));
+            float pausedTime = (float)timer.GetValue(manager);
+            yield return new WaitForSeconds(0.25f);
+            Assert.That((float)timer.GetValue(manager), Is.EqualTo(pausedTime).Within(0.001f));
+
+            Button continueButton = Resources.FindObjectsOfTypeAll<Button>()
+                .First(button => button.name == "PAUSE_CONTINUE");
+            continueButton.onClick.Invoke();
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Racing"));
+            Assert.That(Resources.FindObjectsOfTypeAll<Button>().Any(button => button.name == "RESULT_RETRY"), Is.True);
+            Assert.That(Resources.FindObjectsOfTypeAll<Button>().Any(button => button.name == "RESULT_MENU"), Is.True);
+
+            pause.GetComponent<Button>().onClick.Invoke();
+            Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "PAUSE_RETRY").onClick.Invoke();
+            yield return null;
+            yield return null;
+            managerObject = GameObject.Find("AirRace_Run_Manager");
+            manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            state = manager.GetType().GetProperty("State");
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Ready"), "Pause retry returns to the start menu.");
+
+            BeginRaceImmediatelyForTest(manager);
+            yield return null;
+            manager.GetType().GetMethod("Fail").Invoke(manager, new object[] { "Test" });
+            yield return null;
+            Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "RESULT_MENU").onClick.Invoke();
+            yield return null;
+            yield return null;
+            managerObject = GameObject.Find("AirRace_Run_Manager");
+            manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            Assert.That(manager.GetType().GetProperty("State").GetValue(manager).ToString(), Is.EqualTo("Ready"), "Results menu returns to the main menu.");
+        }
+
+        [UnityTest]
+        public IEnumerator FlightVfx_CreateWingtipTrailsAndCheckpointPulse()
+        {
+            SceneManager.LoadScene(SceneName);
+            yield return null;
+            yield return null;
+
+            GameObject aircraft = GameObject.Find("Aircraft_Player");
+            GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
+            Assert.That(aircraft.transform.Find("VFX_Wingtip_Left"), Is.Not.Null);
+            Assert.That(aircraft.transform.Find("VFX_Wingtip_Right"), Is.Not.Null);
+
+            MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            MonoBehaviour vfx = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceVFXController");
+            BeginRaceImmediatelyForTest(manager);
+            yield return null;
+            bool checkpointAccepted = (bool)manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { 0 });
+            Assert.That(checkpointAccepted, Is.True);
+            Assert.That(vfx.GetType().GetProperty("LastEffectName").GetValue(vfx).ToString(), Is.EqualTo("VFX_Checkpoint_Pulse"));
+            Assert.That(GameObject.Find("VFX_Checkpoint_Pulse"), Is.Not.Null);
+        }
+
         private static void BeginRaceImmediatelyForTest(MonoBehaviour manager)
         {
             manager.GetType().GetMethod("StartRace").Invoke(manager, null);

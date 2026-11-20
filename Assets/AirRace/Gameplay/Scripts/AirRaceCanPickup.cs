@@ -67,6 +67,7 @@ namespace AirRace.Gameplay
             if (!other.GetComponentInParent<AircraftFlightController>()) return;
             if (AirRaceRunManager.Instance == null) return;
             AirRaceRunManager.Instance.CollectCan();
+            if (AirRaceVFXController.Instance != null) AirRaceVFXController.Instance.CanCollected(transform.position);
             Destroy(gameObject);
         }
     }

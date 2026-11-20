@@ -47,6 +47,8 @@ namespace AirRace.Gameplay
         public float AirSpeed => body != null ? body.linearVelocity.magnitude : cruiseSpeed;
         public float Altitude => transform.position.y - waterLine;
         public float Heading => heading;
+        public bool IsTurning => Mathf.Abs(turnInput) > 0.1f;
+        public bool IsPerformingRoll => rolling;
 
         public void SetVisualRoot(Transform root) => visualRoot = root;
 
@@ -72,6 +74,20 @@ namespace AirRace.Gameplay
                 return;
             }
 
+            if (run != null && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            {
+                run.TogglePause();
+                return;
+            }
+
+            if (run != null && run.State == RaceState.Paused)
+            {
+                pitchInput = 0f;
+                turnInput = 0f;
+                braking = false;
+                return;
+            }
+
             if (run != null && run.State == RaceState.Ready)
             {
                 pitchInput = 0f;
@@ -90,8 +106,10 @@ namespace AirRace.Gameplay
             }
 
             if (keyboard == null || crashed) return;
-            pitchInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
-            turnInput = (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f);
+            pitchInput = (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1f : 0f) -
+                         (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1f : 0f);
+            turnInput = (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1f : 0f) -
+                        (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1f : 0f);
             braking = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
 
             if (keyboard.spaceKey.wasPressedThisFrame && AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.TryActivateBoost())
@@ -99,6 +117,7 @@ namespace AirRace.Gameplay
 
             if (body.position.y <= waterLine + 1.5f && AirRaceRunManager.Instance != null)
             {
+                if (AirRaceVFXController.Instance != null) AirRaceVFXController.Instance.WaterImpact(transform.position);
                 crashed = true;
                 AirRaceRunManager.Instance.Fail("El avión tocó el agua");
             }
@@ -107,11 +126,14 @@ namespace AirRace.Gameplay
         private void FixedUpdate()
         {
             float dt = Time.fixedDeltaTime;
-            if (crashed || (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.State != RaceState.Racing))
+            if (crashed || (AirRaceRunManager.Instance != null &&
+                AirRaceRunManager.Instance.State != RaceState.Racing && AirRaceRunManager.Instance.State != RaceState.Paused))
             {
                 body.linearVelocity = Vector3.zero;
                 return;
             }
+
+            if (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.State == RaceState.Paused) return;
 
             impactDamageCooldownRemaining = Mathf.Max(0f, impactDamageCooldownRemaining - dt);
             if (impactRecoveryRemaining > 0f)
@@ -196,6 +218,7 @@ namespace AirRace.Gameplay
         {
             if (crashed || collision.contactCount == 0 || impactRecoveryRemaining > 0f) return;
             ContactPoint contact = collision.GetContact(0);
+            if (AirRaceVFXController.Instance != null) AirRaceVFXController.Instance.PylonImpact(contact.point);
             Vector3 away = contact.normal.normalized;
             if (away.sqrMagnitude < 0.01f) away = -transform.forward;
             // Recoil follows the collision normal; no artificial yaw that can make the plane orbit the pylon.

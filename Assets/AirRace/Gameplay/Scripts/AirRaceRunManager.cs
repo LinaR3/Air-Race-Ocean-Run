@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AirRace.Gameplay
 {
-    public enum RaceState { Ready, Countdown, Racing, Won, Failed }
+    public enum RaceState { Ready, Countdown, Racing, Paused, Won, Failed }
 
     public sealed class AirRaceRunManager : MonoBehaviour
     {
@@ -31,6 +31,25 @@ namespace AirRace.Gameplay
         public int CheckpointCount => checkpointCount;
         public bool IsBoosting => BoostTimeRemaining > 0f;
 
+        public bool PauseRace()
+        {
+            if (State != RaceState.Racing) return false;
+            State = RaceState.Paused;
+            return true;
+        }
+
+        public bool ResumeRace()
+        {
+            if (State != RaceState.Paused) return false;
+            State = RaceState.Racing;
+            return true;
+        }
+
+        public bool TogglePause()
+        {
+            return State == RaceState.Racing ? PauseRace() : ResumeRace();
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -41,6 +60,7 @@ namespace AirRace.Gameplay
             Instance = this;
             TimeRemaining = durationSeconds;
             gameObject.AddComponent<AirRaceHUD>().Initialize(this);
+            gameObject.AddComponent<AirRaceVFXController>().Initialize(this);
         }
 
         private void Update()
@@ -80,6 +100,9 @@ namespace AirRace.Gameplay
             NextCheckpoint++;
             Score += 10;
             Energy = Mathf.Min(100f, Energy + checkpointEnergy);
+            GameObject gate = GameObject.Find("Checkpoint_" + (checkpointIndex + 1).ToString("00"));
+            if (gate != null && AirRaceVFXController.Instance != null)
+                AirRaceVFXController.Instance.CheckpointPassed(gate.transform.position);
             return true;
         }
 
@@ -137,11 +160,19 @@ namespace AirRace.Gameplay
 
         public void Restart()
         {
+            Time.timeScale = 1f;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        }
+
+        public void ReturnToMenu()
+        {
+            Time.timeScale = 1f;
             UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
         }
 
         private void OnDestroy()
         {
+            Time.timeScale = 1f;
             if (Instance == this) Instance = null;
         }
 
