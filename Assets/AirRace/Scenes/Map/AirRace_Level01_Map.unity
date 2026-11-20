@@ -1251,6 +1251,7 @@ MonoBehaviour:
   canEnergy: 30
   maximumBoostCharges: 3
   comboInputWindow: 0.9
+  startCountdownSeconds: 3
 --- !u!1001 &1048996081
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2131,7 +2132,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1012997493607794589, guid: 7081e1d88a9784a16881146247724840, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -120
+      value: 91.63
       objectReference: {fileID: 0}
     - target: {fileID: 1012997493607794589, guid: 7081e1d88a9784a16881146247724840, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2139,7 +2140,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1012997493607794589, guid: 7081e1d88a9784a16881146247724840, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 200
+      value: 173.74
       objectReference: {fileID: 0}
     - target: {fileID: 1012997493607794589, guid: 7081e1d88a9784a16881146247724840, type: 3}
       propertyPath: m_LocalRotation.w
