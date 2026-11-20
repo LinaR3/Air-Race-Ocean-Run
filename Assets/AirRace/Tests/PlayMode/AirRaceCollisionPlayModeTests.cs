@@ -305,8 +305,16 @@ namespace AirRace.Tests
 
             GameObject aircraft = GameObject.Find("Aircraft_Player");
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
-            Assert.That(aircraft.transform.Find("VFX_Wingtip_Left"), Is.Not.Null);
-            Assert.That(aircraft.transform.Find("VFX_Wingtip_Right"), Is.Not.Null);
+            Transform leftSmoke = aircraft.transform.Find("VFX_Smoke_Wingtip_Left");
+            Transform rightSmoke = aircraft.transform.Find("VFX_Smoke_Wingtip_Right");
+            Assert.That(leftSmoke, Is.Not.Null);
+            Assert.That(rightSmoke, Is.Not.Null);
+            ParticleSystem leftSystem = leftSmoke.GetComponent<ParticleSystem>();
+            Assert.That(leftSystem.noise.enabled, Is.True, "Smoke puffs need turbulent motion.");
+            Assert.That(leftSystem.colorOverLifetime.enabled, Is.True);
+            Assert.That(leftSystem.sizeOverLifetime.enabled, Is.True, "Particles should swell and dissolve like smoke.");
+            Assert.That(leftSmoke.GetComponent<ParticleSystemRenderer>().sharedMaterial.mainTexture, Is.Not.Null,
+                "The smoke renderer needs a soft, noisy particle texture.");
 
             MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
                 .First(component => component.GetType().Name == "AirRaceRunManager");
@@ -314,6 +322,12 @@ namespace AirRace.Tests
                 .First(component => component.GetType().Name == "AirRaceVFXController");
             BeginRaceImmediatelyForTest(manager);
             yield return null;
+            manager.GetType().GetMethod("CollectCan").Invoke(manager, null);
+            manager.GetType().GetMethod("TryActivateBoost").Invoke(manager, null);
+            yield return new WaitForSeconds(0.25f);
+            var particles = new ParticleSystem.Particle[220];
+            int particleCount = leftSystem.GetParticles(particles);
+            Assert.That(particleCount, Is.GreaterThan(0), "The boost should emit visible smoke particles from the wingtip.");
             bool checkpointAccepted = (bool)manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { 0 });
             Assert.That(checkpointAccepted, Is.True);
             Assert.That(vfx.GetType().GetProperty("LastEffectName").GetValue(vfx).ToString(), Is.EqualTo("VFX_Checkpoint_Pulse"));

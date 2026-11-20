@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AirRace.Gameplay
 {
-    /// <summary>Subtle, inexpensive flight feedback made from short particle bursts and wingtip trails.</summary>
+    /// <summary>Flight feedback built from soft particle smoke and short impact bursts.</summary>
     public sealed class AirRaceVFXController : MonoBehaviour
     {
         public static AirRaceVFXController Instance { get; private set; }
@@ -12,7 +12,9 @@ namespace AirRace.Gameplay
         private AircraftFlightController aircraft;
         private AirRaceRunManager run;
         private float wingEmission;
-        private static Material particleMaterial;
+        private static Material smokeMaterial;
+        private static Material burstMaterial;
+        private static Texture2D smokeTexture;
         public string LastEffectName { get; private set; }
 
         public void Initialize(AirRaceRunManager manager)
@@ -21,8 +23,8 @@ namespace AirRace.Gameplay
             aircraft = FindFirstObjectByType<AircraftFlightController>();
             if (aircraft == null) return;
 
-            leftWingTrail = CreateTrail("VFX_Wingtip_Left", aircraft.transform, new Vector3(-7.2f, 0f, -0.2f));
-            rightWingTrail = CreateTrail("VFX_Wingtip_Right", aircraft.transform, new Vector3(7.2f, 0f, -0.2f));
+            leftWingTrail = CreateSmokeTrail("VFX_Smoke_Wingtip_Left", aircraft.transform, new Vector3(-7.2f, 0f, -0.2f));
+            rightWingTrail = CreateSmokeTrail("VFX_Smoke_Wingtip_Right", aircraft.transform, new Vector3(7.2f, 0f, -0.2f));
         }
 
         private void Awake()
@@ -38,8 +40,8 @@ namespace AirRace.Gameplay
         private void Update()
         {
             if (aircraft == null || run == null) return;
-            float targetRate = run.IsBoosting ? 26f : aircraft.IsTurning ? 9f : 0f;
-            wingEmission = Mathf.MoveTowards(wingEmission, targetRate, 100f * Time.deltaTime);
+            float targetRate = run.IsBoosting ? 38f : aircraft.IsTurning ? 14f : 0f;
+            wingEmission = Mathf.MoveTowards(wingEmission, targetRate, 120f * Time.deltaTime);
             SetRate(leftWingTrail, wingEmission);
             SetRate(rightWingTrail, wingEmission);
         }
@@ -64,7 +66,7 @@ namespace AirRace.Gameplay
             Burst("VFX_Water_Splash", position, new Color(0.28f, 0.8f, 1f), 42, 7f, 0.2f);
         }
 
-        private static ParticleSystem CreateTrail(string name, Transform parent, Vector3 localPosition)
+        private static ParticleSystem CreateSmokeTrail(string name, Transform parent, Vector3 localPosition)
         {
             var go = new GameObject(name, typeof(ParticleSystem));
             go.transform.SetParent(parent, false);
@@ -74,28 +76,40 @@ namespace AirRace.Gameplay
             var main = system.main;
             main.loop = true;
             main.playOnAwake = false;
-            main.startLifetime = 0.62f;
-            main.startSpeed = 4f;
-            main.startSize = 0.14f;
-            main.startColor = new Color(0.62f, 0.89f, 1f, 0.62f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(1.15f, 2.05f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(1.1f, 2.5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.7f, 1.25f);
+            main.startColor = new Color(0.91f, 0.94f, 0.98f, 0.58f);
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 96;
+            main.maxParticles = 220;
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             var emission = system.emission;
             emission.enabled = true;
             emission.rateOverTime = 0f;
             var shape = system.shape;
             shape.enabled = true;
             shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = 4f;
-            shape.radius = 0.08f;
+            shape.angle = 12f;
+            shape.radius = 0.18f;
+            var noise = system.noise;
+            noise.enabled = true;
+            noise.strength = new ParticleSystem.MinMaxCurve(0.42f, 0.82f);
+            noise.frequency = 0.48f;
+            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.08f);
+            noise.damping = true;
+            noise.quality = ParticleSystemNoiseQuality.Low;
             var color = system.colorOverLifetime;
             color.enabled = true;
             var gradient = new Gradient();
             gradient.SetKeys(
-                new[] { new GradientColorKey(new Color(0.78f, 0.94f, 1f), 0f), new GradientColorKey(new Color(0.28f, 0.65f, 1f), 1f) },
-                new[] { new GradientAlphaKey(0.65f, 0f), new GradientAlphaKey(0f, 1f) });
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.84f, 0.87f, 0.91f), 0.74f), new GradientColorKey(new Color(0.72f, 0.76f, 0.81f), 1f) },
+                new[] { new GradientAlphaKey(0.18f, 0f), new GradientAlphaKey(0.42f, 0.16f), new GradientAlphaKey(0.29f, 0.68f), new GradientAlphaKey(0f, 1f) });
             color.color = gradient;
-            ConfigureParticleRenderer(go.GetComponent<ParticleSystemRenderer>(), new Color(0.55f, 0.84f, 1f));
+            var size = system.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
+                new Keyframe(0f, 0.62f), new Keyframe(0.24f, 1f), new Keyframe(1f, 2.15f)));
+            ConfigureSmokeRenderer(go.GetComponent<ParticleSystemRenderer>());
             return system;
         }
 
@@ -127,19 +141,66 @@ namespace AirRace.Gameplay
             gradient.SetKeys(new[] { new GradientColorKey(tint, 0f), new GradientColorKey(Color.white, 0.28f), new GradientColorKey(tint, 1f) },
                 new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
             color.color = gradient;
-            ConfigureParticleRenderer(go.GetComponent<ParticleSystemRenderer>(), tint);
+            ConfigureBurstRenderer(go.GetComponent<ParticleSystemRenderer>());
             system.Play();
             Destroy(go, 1.5f);
         }
 
-        private static void ConfigureParticleRenderer(ParticleSystemRenderer renderer, Color tint)
+        private static void ConfigureSmokeRenderer(ParticleSystemRenderer renderer)
+        {
+            renderer.renderMode = ParticleSystemRenderMode.Billboard;
+            renderer.alignment = ParticleSystemRenderSpace.View;
+            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit");
+            if (shader == null) return;
+            if (smokeTexture == null) smokeTexture = CreateSmokeTexture();
+            if (smokeMaterial == null)
+            {
+                smokeMaterial = new Material(shader) { name = "AirRace_Runtime_SoftSmoke_Material", hideFlags = HideFlags.DontSave };
+                if (smokeMaterial.HasProperty("_BaseMap")) smokeMaterial.SetTexture("_BaseMap", smokeTexture);
+                if (smokeMaterial.HasProperty("_MainTex")) smokeMaterial.SetTexture("_MainTex", smokeTexture);
+                if (smokeMaterial.HasProperty("_Surface")) smokeMaterial.SetFloat("_Surface", 1f);
+                smokeMaterial.color = Color.white;
+            }
+            renderer.sharedMaterial = smokeMaterial;
+        }
+
+        private static Texture2D CreateSmokeTexture()
+        {
+            const int resolution = 64;
+            var texture = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false, true)
+            {
+                name = "AirRace_Runtime_SoftSmoke_Texture",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear,
+                hideFlags = HideFlags.DontSave
+            };
+            var pixels = new Color[resolution * resolution];
+            for (int y = 0; y < resolution; y++)
+            for (int x = 0; x < resolution; x++)
+            {
+                float u = (x + 0.5f) / resolution * 2f - 1f;
+                float v = (y + 0.5f) / resolution * 2f - 1f;
+                float radius = Mathf.Sqrt(u * u * 0.86f + v * v);
+                float edge = 1f - Mathf.SmoothStep(0.28f, 1.02f, radius);
+                float broadNoise = Mathf.PerlinNoise((u + 1.7f) * 3.6f, (v + 2.1f) * 3.6f);
+                float fineNoise = Mathf.PerlinNoise((u + 4.3f) * 8.4f, (v + 0.9f) * 8.4f);
+                float wisps = 0.58f + broadNoise * 0.3f + fineNoise * 0.22f;
+                float alpha = Mathf.Clamp01(edge * wisps);
+                pixels[y * resolution + x] = new Color(1f, 1f, 1f, alpha);
+            }
+            texture.SetPixels(pixels);
+            texture.Apply(false, true);
+            return texture;
+        }
+
+        private static void ConfigureBurstRenderer(ParticleSystemRenderer renderer)
         {
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
             Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit");
             if (shader == null) return;
-            if (particleMaterial == null)
-                particleMaterial = new Material(shader) { name = "AirRace_Runtime_VFX_Material", color = Color.white };
-            renderer.sharedMaterial = particleMaterial;
+            if (burstMaterial == null)
+                burstMaterial = new Material(shader) { name = "AirRace_Runtime_Burst_Material", hideFlags = HideFlags.DontSave, color = Color.white };
+            renderer.sharedMaterial = burstMaterial;
         }
 
         private static void SetRate(ParticleSystem system, float rate)
@@ -155,10 +216,20 @@ namespace AirRace.Gameplay
         {
             if (Instance != this) return;
             Instance = null;
-            if (particleMaterial != null)
+            if (smokeMaterial != null)
             {
-                Destroy(particleMaterial);
-                particleMaterial = null;
+                Destroy(smokeMaterial);
+                smokeMaterial = null;
+            }
+            if (smokeTexture != null)
+            {
+                Destroy(smokeTexture);
+                smokeTexture = null;
+            }
+            if (burstMaterial != null)
+            {
+                Destroy(burstMaterial);
+                burstMaterial = null;
             }
         }
     }
