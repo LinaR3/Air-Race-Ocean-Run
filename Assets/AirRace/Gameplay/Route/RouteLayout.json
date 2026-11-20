@@ -5,13 +5,14 @@
   "checkpoints": 6,
   "finish": 1,
   "gatePairSpacingMeters": 24,
-  "checkpointCenterPositionsMeters": [[0, 14, 200], [180, 19, 100], [180, 15, -100], [0, 20, -200], [-180, 16, -100], [-180, 19, 100]],
-  "checkpointSegmentDistancesMeters": [206, 200, 206, 206, 200, 206],
-  "checkpointCenterSpacingMeters": "200-206; 6.25-6.44 seconds at 32 m/s cruise speed",
+  "startPlatform": "Floating runway panel; aircraft starts 120 m before checkpoint 1",
+  "checkpointCenterPositionsMeters": [[0, 14, 270], [243, 19, 135], [243, 15, -135], [0, 20, -270], [-243, 16, -135], [-243, 19, 135]],
+  "checkpointSegmentDistancesMeters": [278.0, 270.0, 278.0, 278.0, 270.0, 278.0],
+  "checkpointCenterSpacingMeters": "270-278; about 7.9-8.2 seconds at 34 m/s cruise speed",
   "oceanSizeMeters": "4800 x 4800 square",
   "invisibleFlightBoundaryMeters": "900 from world origin on X and Z",
   "pylonHeightMeters": 25,
   "finishMarker": "Gold paired pylons near checkpoint 1",
-  "energyCanVisibility": "5 m tall can inside a 10.4 m diameter double-sided bright yellow-orange emissive ring; pickup trigger radius 6 m",
-  "designNote": "Six sequential paired pylon gates around a broad closed oval and a distinct seventh finish marker. Horizontal heading stays level; W/S control climb and descent without removing forward travel. A 4.8 km ocean tile and 1.4 km camera far clip keep the water edge beyond the visible horizon; the invisible square flight boundary is at 900 m from origin."
+  "energyCanVisibility": "5 m tall can inside a 10.4 m diameter double-sided bright yellow-orange emissive ring; pickup trigger radius 10 m",
+  "designNote": "Six ordered paired pylon gates form a broad closed 1.65 km oval. A floating start panel sits before checkpoint 1; the total nominal distance from start to finish is about 1.77 km, leaving a small handling margin within the existing 60 second limit."
 }
