@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using TMPro;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -53,6 +54,9 @@ namespace AirRace.Tests
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
             MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
                 .First(component => component.GetType().Name == "AirRaceRunManager");
+            BeginRaceImmediatelyForTest(manager);
+            yield return null;
+            Assert.That(manager.GetType().GetProperty("State").GetValue(manager).ToString(), Is.EqualTo("Racing"));
             manager.enabled = false;
             PropertyInfo energyProperty = manager.GetType().GetProperty("Energy");
             float energyBefore = (float)energyProperty.GetValue(manager);
@@ -143,20 +147,22 @@ namespace AirRace.Tests
             yield return null;
 
             GameObject hudCanvas = GameObject.Find("AirRace_HUD_Canvas");
-            GameObject checkpointLabel = GameObject.Find("ACTIVE_GATE");
-            GameObject radar = GameObject.Find("ROUTE_RADAR");
+            Transform checkpointLabelTransform = hudCanvas != null ? hudCanvas.transform.Find("Race_HUD/ACTIVE_GATE") : null;
+            Transform radarTransform = hudCanvas != null ? hudCanvas.transform.Find("Race_HUD/ROUTE_RADAR") : null;
             Assert.That(hudCanvas, Is.Not.Null, "The flight HUD should render in screen space.");
-            Assert.That(checkpointLabel, Is.Not.Null);
-            Assert.That(radar, Is.Not.Null, "The HUD should show the actual checkpoint route radar.");
-            Text checkpointText = checkpointLabel.GetComponent<Text>();
-            Assert.That(checkpointText.text, Does.Contain("PUERTA  01"));
+            Assert.That(checkpointLabelTransform, Is.Not.Null);
+            Assert.That(radarTransform, Is.Not.Null, "The HUD should show the actual checkpoint route radar.");
+            TMP_Text checkpointText = checkpointLabelTransform.GetComponent<TMP_Text>();
+            Assert.That(checkpointText.text, Does.Contain("PUERTA 01"));
 
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
             MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
                 .First(component => component.GetType().Name == "AirRaceRunManager");
+            BeginRaceImmediatelyForTest(manager);
+            yield return null;
             manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { 0 });
             yield return null;
-            Assert.That(checkpointText.text, Does.Contain("PUERTA  02"), "The HUD should display the next active checkpoint.");
+            Assert.That(checkpointText.text, Does.Contain("PUERTA 02"), "The HUD should display the next active checkpoint.");
         }
 
         [UnityTest]
@@ -188,6 +194,46 @@ namespace AirRace.Tests
             yield return null;
             Assert.That(beacon.enabled, Is.True, "The beacon should turn on as the player approaches.");
             Assert.That(beacon.range, Is.GreaterThan(20f));
+        }
+
+        [UnityTest]
+        public IEnumerator Race_StartOverlayAndCountdown_DoNotConsumeFlightTimeOrEnergy()
+        {
+            SceneManager.LoadScene(SceneName);
+            yield return null;
+            yield return null;
+
+            GameObject startOverlay = GameObject.Find("Race_Start_Overlay");
+            Assert.That(startOverlay, Is.Not.Null);
+            Assert.That(startOverlay.activeSelf, Is.True, "The control card should be shown before the race starts.");
+            Assert.That(GameObject.Find("START_CONTROL_1").GetComponent<TMP_Text>().text, Does.Contain("W / S"));
+
+            GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
+            MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            PropertyInfo state = manager.GetType().GetProperty("State");
+            PropertyInfo time = manager.GetType().GetProperty("TimeRemaining");
+            PropertyInfo energy = manager.GetType().GetProperty("Energy");
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Ready"));
+            float initialTime = (float)time.GetValue(manager);
+            float initialEnergy = (float)energy.GetValue(manager);
+
+            FieldInfo countdownDuration = manager.GetType().GetField("startCountdownSeconds", BindingFlags.Instance | BindingFlags.NonPublic);
+            countdownDuration.SetValue(manager, 0.3f);
+            manager.GetType().GetMethod("StartRace").Invoke(manager, null);
+            yield return new WaitForSeconds(0.1f);
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Countdown"));
+            Assert.That((float)time.GetValue(manager), Is.EqualTo(initialTime).Within(0.001f));
+            Assert.That((float)energy.GetValue(manager), Is.EqualTo(initialEnergy).Within(0.001f));
+            yield return new WaitForSeconds(0.3f);
+            Assert.That(state.GetValue(manager).ToString(), Is.EqualTo("Racing"));
+            Assert.That((float)time.GetValue(manager), Is.LessThan(initialTime));
+        }
+
+        private static void BeginRaceImmediatelyForTest(MonoBehaviour manager)
+        {
+            manager.GetType().GetMethod("StartRace").Invoke(manager, null);
+            manager.GetType().GetProperty("CountdownRemaining").SetValue(manager, 0f);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,23 +12,28 @@ namespace AirRace.Gameplay
         private static readonly Color Blue = new Color(0.04f, 0.27f, 0.58f, 0.96f);
         private static readonly Color Yellow = new Color(1f, 0.78f, 0.05f, 1f);
         private static readonly Color White = new Color(0.96f, 1f, 0.98f, 1f);
-        private static readonly Color Mint = new Color(0.35f, 1f, 0.78f, 1f);
+        private static readonly Color LabelColor = new Color(0.78f, 0.89f, 0.96f, 1f);
 
         private AirRaceRunManager run;
         private AircraftFlightController aircraft;
-        private Text timeValue;
-        private Text speedValue;
-        private Text altitudeValue;
-        private Text gateValue;
-        private Text scoreValue;
-        private Text energyValue;
-        private Text boostValue;
-        private Text impactValue;
-        private Text resultTitle;
-        private Text resultDetails;
+        private TMP_Text timeValue;
+        private TMP_Text speedValue;
+        private TMP_Text altitudeValue;
+        private TMP_Text gateValue;
+        private TMP_Text scoreValue;
+        private TMP_Text energyValue;
+        private TMP_Text boostValue;
+        private TMP_Text impactValue;
+        private TMP_Text resultTitle;
+        private TMP_Text resultDetails;
         private Image energyFill;
         private GameObject raceLayer;
+        private GameObject startLayer;
         private GameObject resultLayer;
+        private TMP_Text startTitle;
+        private TMP_Text startDetails;
+        private TMP_Text countdownValue;
+        private TMP_Text[] startControlLines;
         private AirRaceRadarDisplay radar;
         private AirRaceCheckpoint[] checkpoints = Array.Empty<AirRaceCheckpoint>();
 
@@ -44,10 +50,38 @@ namespace AirRace.Gameplay
         {
             if (run == null || raceLayer == null || resultLayer == null) return;
             bool racing = run.State == RaceState.Racing;
+            bool terminal = run.State == RaceState.Won || run.State == RaceState.Failed;
             raceLayer.SetActive(racing);
-            resultLayer.SetActive(!racing);
+            startLayer.SetActive(run.State == RaceState.Ready || run.State == RaceState.Countdown);
+            resultLayer.SetActive(terminal);
 
-            if (!racing)
+            if (run.State == RaceState.Ready)
+            {
+                startTitle.text = "AIR RACE OCEAN RUN";
+                startDetails.text = "OBJETIVO: 6 CHECKPOINTS Y META";
+                startDetails.fontSize = 30;
+                startDetails.rectTransform.anchoredPosition = new Vector2(0f, 135f);
+                foreach (TMP_Text line in startControlLines) line.gameObject.SetActive(true);
+                countdownValue.text = "PULSA ENTER PARA EMPEZAR";
+                countdownValue.fontSize = 34;
+                countdownValue.rectTransform.anchoredPosition = new Vector2(0f, -260f);
+                return;
+            }
+
+            if (run.State == RaceState.Countdown)
+            {
+                startTitle.text = "PREPÁRATE";
+                startDetails.text = "MANTÉN EL RUMBO HACIA LA PRIMERA PUERTA";
+                startDetails.fontSize = 26;
+                startDetails.rectTransform.anchoredPosition = new Vector2(0f, 28f);
+                foreach (TMP_Text line in startControlLines) line.gameObject.SetActive(false);
+                countdownValue.text = Mathf.CeilToInt(run.CountdownRemaining).ToString();
+                countdownValue.fontSize = 96;
+                countdownValue.rectTransform.anchoredPosition = new Vector2(0f, -135f);
+                return;
+            }
+
+            if (terminal)
             {
                 resultTitle.text = run.State == RaceState.Won ? "¡VUELTA COMPLETADA!" : "VUELO TERMINADO";
                 resultDetails.text = run.State == RaceState.Won
@@ -80,7 +114,7 @@ namespace AirRace.Gameplay
                 if (run.NextCheckpoint < checkpoints.Length)
                 {
                     float distance = Vector3.Distance(aircraft.transform.position, checkpoints[run.NextCheckpoint].transform.position);
-                    gateValue.text = $"PUERTA  {run.NextCheckpoint + 1:00}   ·   {Mathf.RoundToInt(distance):000} M";
+                    gateValue.text = $"PUERTA {run.NextCheckpoint + 1:00} · {Mathf.RoundToInt(distance):000} M";
                 }
                 else gateValue.text = "CRUZA LA META";
             }
@@ -100,47 +134,65 @@ namespace AirRace.Gameplay
 
             raceLayer = MakeRect("Race_HUD", canvasObject.transform).gameObject;
 
-            Panel("Flight_Data_Panel", raceLayer.transform, new Vector2(0f, 1f), new Vector2(30f, -28f), new Vector2(350f, 142f));
-            Label("SPEED_LABEL", raceLayer.transform, "VELOCIDAD", 20, Mint, new Vector2(0f, 1f), new Vector2(56f, -43f), new Vector2(145f, 30f), TextAnchor.MiddleLeft);
-            speedValue = Label("SPEED_VALUE", raceLayer.transform, "000 KM/H", 38, White, new Vector2(0f, 1f), new Vector2(54f, -81f), new Vector2(230f, 50f), TextAnchor.MiddleLeft);
-            Label("ALTITUDE_LABEL", raceLayer.transform, "ALTITUD", 20, Mint, new Vector2(0f, 1f), new Vector2(215f, -43f), new Vector2(110f, 30f), TextAnchor.MiddleLeft);
-            altitudeValue = Label("ALTITUDE_VALUE", raceLayer.transform, "000 M", 34, White, new Vector2(0f, 1f), new Vector2(214f, -82f), new Vector2(120f, 48f), TextAnchor.MiddleLeft);
+            // Keep the flight picture open: labels float over the scene with a subtle shadow, not opaque cards.
+            Label("SPEED_LABEL", raceLayer.transform, "VELOCIDAD", 15, LabelColor, new Vector2(0f, 1f), new Vector2(38f, -32f), new Vector2(160f, 24f), TextAnchor.MiddleLeft);
+            speedValue = Label("SPEED_VALUE", raceLayer.transform, "000 KM/H", 34, White, new Vector2(0f, 1f), new Vector2(38f, -65f), new Vector2(205f, 45f), TextAnchor.MiddleLeft);
+            Label("ALTITUDE_LABEL", raceLayer.transform, "ALTITUD", 15, LabelColor, new Vector2(0f, 1f), new Vector2(258f, -32f), new Vector2(140f, 24f), TextAnchor.MiddleLeft);
+            altitudeValue = Label("ALTITUDE_VALUE", raceLayer.transform, "000 M", 34, White, new Vector2(0f, 1f), new Vector2(258f, -65f), new Vector2(145f, 45f), TextAnchor.MiddleLeft);
 
-            Panel("Time_Panel", raceLayer.transform, new Vector2(0.5f, 1f), new Vector2(0f, -26f), new Vector2(230f, 106f));
-            Label("TIME_LABEL", raceLayer.transform, "TIEMPO", 19, Yellow, new Vector2(0.5f, 1f), new Vector2(0f, -31f), new Vector2(190f, 28f), TextAnchor.MiddleCenter);
-            timeValue = Label("TIME_VALUE", raceLayer.transform, "60", 48, White, new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(190f, 56f), TextAnchor.MiddleCenter);
+            Label("TIME_LABEL", raceLayer.transform, "TIEMPO", 15, LabelColor, new Vector2(0.5f, 1f), new Vector2(0f, -25f), new Vector2(170f, 22f), TextAnchor.MiddleCenter);
+            timeValue = Label("TIME_VALUE", raceLayer.transform, "60", 40, White, new Vector2(0.5f, 1f), new Vector2(0f, -58f), new Vector2(180f, 48f), TextAnchor.MiddleCenter);
 
-            Panel("Score_Panel", raceLayer.transform, new Vector2(1f, 1f), new Vector2(-30f, -28f), new Vector2(270f, 112f));
-            Label("SCORE_LABEL", raceLayer.transform, "PUNTOS", 20, Yellow, new Vector2(1f, 1f), new Vector2(-52f, -32f), new Vector2(200f, 28f), TextAnchor.MiddleRight);
-            scoreValue = Label("SCORE_VALUE", raceLayer.transform, "00000", 43, White, new Vector2(1f, 1f), new Vector2(-50f, -69f), new Vector2(200f, 52f), TextAnchor.MiddleRight);
+            Label("SCORE_LABEL", raceLayer.transform, "PUNTOS", 15, LabelColor, new Vector2(1f, 1f), new Vector2(-38f, -29f), new Vector2(170f, 22f), TextAnchor.MiddleRight);
+            scoreValue = Label("SCORE_VALUE", raceLayer.transform, "00000", 36, White, new Vector2(1f, 1f), new Vector2(-38f, -65f), new Vector2(190f, 45f), TextAnchor.MiddleRight);
 
-            // The route replaces the old floating checkpoint counter with actual spatial guidance.
-            Panel("Radar_Panel", raceLayer.transform, new Vector2(0f, 0f), new Vector2(28f, 26f), new Vector2(316f, 338f));
-            Label("RADAR_LABEL", raceLayer.transform, "RADAR DE RUTA", 21, Mint, new Vector2(0f, 0f), new Vector2(54f, 316f), new Vector2(250f, 32f), TextAnchor.MiddleLeft);
+            // Only the circular route graphic remains; no rectangular radar canvas or backing plate.
+            Label("RADAR_LABEL", raceLayer.transform, "RUTA", 14, LabelColor, new Vector2(0f, 0f), new Vector2(42f, 295f), new Vector2(200f, 22f), TextAnchor.MiddleLeft);
             var radarObject = new GameObject("ROUTE_RADAR", typeof(RectTransform), typeof(AirRaceRadarDisplay));
             radarObject.transform.SetParent(raceLayer.transform, false);
             RectTransform radarRect = radarObject.GetComponent<RectTransform>();
             radarRect.anchorMin = radarRect.anchorMax = Vector2.zero;
             radarRect.pivot = Vector2.zero;
-            radarRect.anchoredPosition = new Vector2(48f, 82f);
-            radarRect.sizeDelta = new Vector2(270f, 220f);
+            radarRect.anchoredPosition = new Vector2(42f, 66f);
+            radarRect.sizeDelta = new Vector2(232f, 232f);
             radar = radarObject.GetComponent<AirRaceRadarDisplay>();
-            gateValue = Label("ACTIVE_GATE", raceLayer.transform, "PUERTA  01   ·   000 M", 20, White, new Vector2(0f, 0f), new Vector2(52f, 45f), new Vector2(270f, 30f), TextAnchor.MiddleLeft);
+            gateValue = Label("ACTIVE_GATE", raceLayer.transform, "PUERTA 01 · 000 M", 15, White, new Vector2(0f, 0f), new Vector2(42f, 34f), new Vector2(270f, 24f), TextAnchor.MiddleLeft);
 
-            // Small flight-path reference at screen center, leaving the view unobstructed.
-            Label("FLIGHT_RETICLE", raceLayer.transform, "＋", 34, Mint, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(52f, 52f), TextAnchor.MiddleCenter);
-            impactValue = Label("IMPACT_FEEDBACK", raceLayer.transform, "¡REBOTE!", 40, Yellow, new Vector2(0.5f, 0.5f), new Vector2(0f, -80f), new Vector2(480f, 64f), TextAnchor.MiddleCenter);
+            impactValue = Label("IMPACT_FEEDBACK", raceLayer.transform, "¡REBOTE!", 32, Yellow, new Vector2(0.5f, 0.5f), new Vector2(0f, -80f), new Vector2(480f, 52f), TextAnchor.MiddleCenter);
             impactValue.gameObject.SetActive(false);
 
-            Panel("Energy_Panel", raceLayer.transform, new Vector2(1f, 0f), new Vector2(-28f, 28f), new Vector2(510f, 158f));
-            energyValue = Label("ENERGY_VALUE", raceLayer.transform, "ENERGÍA DE VUELO  72%", 25, White, new Vector2(1f, 0f), new Vector2(-56f, 112f), new Vector2(430f, 36f), TextAnchor.MiddleRight);
-            Box("ENERGY_BAR_BACK", raceLayer.transform, new Color(0.01f, 0.025f, 0.08f, 1f), new Vector2(1f, 0f), new Vector2(-56f, 78f), new Vector2(430f, 20f));
-            energyFill = Box("ENERGY_BAR_FILL", raceLayer.transform, Yellow, new Vector2(1f, 0f), new Vector2(-56f, 80f), new Vector2(426f, 14f));
+            energyValue = Label("ENERGY_VALUE", raceLayer.transform, "ENERGÍA 72%", 18, White, new Vector2(1f, 0f), new Vector2(-44f, 92f), new Vector2(330f, 28f), TextAnchor.MiddleRight);
+            Box("ENERGY_BAR_BACK", raceLayer.transform, new Color(0.01f, 0.025f, 0.08f, 0.78f), new Vector2(1f, 0f), new Vector2(-44f, 66f), new Vector2(320f, 10f));
+            energyFill = Box("ENERGY_BAR_FILL", raceLayer.transform, Yellow, new Vector2(1f, 0f), new Vector2(-44f, 66f), new Vector2(316f, 6f));
             energyFill.type = Image.Type.Filled;
             energyFill.fillMethod = Image.FillMethod.Horizontal;
             energyFill.fillOrigin = (int)Image.OriginHorizontal.Left;
             energyFill.fillAmount = 0.72f;
-            boostValue = Label("BOOST_VALUE", raceLayer.transform, "SIN CARGA  ·  BUSCA UNA LATA", 22, Yellow, new Vector2(1f, 0f), new Vector2(-56f, 38f), new Vector2(430f, 32f), TextAnchor.MiddleRight);
+            boostValue = Label("BOOST_VALUE", raceLayer.transform, "SIN CARGA · BUSCA UNA LATA", 16, Yellow, new Vector2(1f, 0f), new Vector2(-44f, 34f), new Vector2(360f, 26f), TextAnchor.MiddleRight);
+
+            startLayer = MakeRect("Race_Start_Overlay", canvasObject.transform).gameObject;
+            Image startShade = startLayer.AddComponent<Image>();
+            startShade.color = new Color(0.005f, 0.025f, 0.09f, 0.72f);
+            startShade.raycastTarget = false;
+            Panel("START_CARD", startLayer.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1420f, 650f));
+            startTitle = Label("START_TITLE", startLayer.transform, "AIR RACE OCEAN RUN", 56, Yellow,
+                new Vector2(0.5f, 0.5f), new Vector2(0f, 228f), new Vector2(1320f, 86f), TextAnchor.MiddleCenter);
+            startDetails = Label("START_OBJECTIVE", startLayer.transform, string.Empty, 30, White,
+                new Vector2(0.5f, 0.5f), new Vector2(0f, 135f), new Vector2(1320f, 42f), TextAnchor.MiddleCenter);
+            string[] controlLines = {
+                "W / S   SUBIR Y BAJAR",
+                "A / D   GIRAR",
+                "SHIFT   FRENAR Y GIRAR MÁS CERRADO",
+                "SPACE   IMPULSO Y GIRO DE BARRIL",
+                "PILONES RECARGAN ENERGÍA · LATAS DAN IMPULSO"
+            };
+            float[] controlLineY = { 80f, 32f, -16f, -64f, -112f };
+            startControlLines = new TMP_Text[controlLines.Length];
+            for (int i = 0; i < controlLines.Length; i++)
+                startControlLines[i] = Label("START_CONTROL_" + (i + 1), startLayer.transform, controlLines[i], 26, White,
+                    new Vector2(0.5f, 0.5f), new Vector2(0f, controlLineY[i]), new Vector2(1320f, 38f), TextAnchor.MiddleCenter);
+            countdownValue = Label("START_PROMPT", startLayer.transform, "PULSA ENTER PARA EMPEZAR", 34, Yellow,
+                new Vector2(0.5f, 0.5f), new Vector2(0f, -260f), new Vector2(1300f, 68f), TextAnchor.MiddleCenter);
 
             resultLayer = MakeRect("Race_Result_Overlay", canvasObject.transform).gameObject;
             Image shade = resultLayer.AddComponent<Image>();
@@ -186,25 +238,34 @@ namespace AirRace.Gameplay
             return image;
         }
 
-        private static Text Label(string name, Transform parent, string value, int size, Color color, Vector2 anchor, Vector2 position, Vector2 dimensions, TextAnchor alignment)
+        private static TMP_Text Label(string name, Transform parent, string value, int size, Color color, Vector2 anchor, Vector2 position, Vector2 dimensions, TextAnchor alignment)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Text));
+            var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
             go.transform.SetParent(parent, false);
             RectTransform rect = go.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = anchor;
             rect.pivot = anchor;
             rect.anchoredPosition = position;
             rect.sizeDelta = dimensions;
-            Text text = go.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            TMP_Text text = go.GetComponent<TextMeshProUGUI>();
+            TMP_FontAsset flightFont = Resources.Load<TMP_FontAsset>("Fonts/AUDIOWIDE-REGULAR SDF");
+            if (flightFont == null) flightFont = TMP_Settings.defaultFontAsset;
+            text.font = flightFont;
             text.text = value;
             text.fontSize = size;
-            text.fontStyle = FontStyle.Bold;
+            text.fontStyle = name.EndsWith("_LABEL", StringComparison.Ordinal) || name == "RADAR_LABEL"
+                ? FontStyles.Normal : FontStyles.Bold;
+            text.characterSpacing = name.EndsWith("_LABEL", StringComparison.Ordinal) || name == "RADAR_LABEL" ? 2f : 0f;
             text.color = color;
-            text.alignment = alignment;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.alignment = alignment == TextAnchor.MiddleCenter ? TextAlignmentOptions.Center :
+                alignment == TextAnchor.MiddleRight ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.overflowMode = TextOverflowModes.Overflow;
             text.raycastTarget = false;
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0.005f, 0.018f, 0.04f, 0.9f);
+            shadow.effectDistance = new Vector2(1.5f, -1.5f);
+            shadow.useGraphicAlpha = true;
             return text;
         }
     }
