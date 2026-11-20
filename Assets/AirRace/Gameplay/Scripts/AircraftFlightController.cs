@@ -63,13 +63,32 @@ namespace AirRace.Gameplay
 
         private void Update()
         {
-            if (AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.State != RaceState.Racing)
+            AirRaceRunManager run = AirRaceRunManager.Instance;
+            Keyboard keyboard = Keyboard.current;
+
+            if (run != null && (run.State == RaceState.Won || run.State == RaceState.Failed))
             {
-                if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame) AirRaceRunManager.Instance.Restart();
+                if (keyboard != null && keyboard.rKey.wasPressedThisFrame) run.Restart();
                 return;
             }
 
-            Keyboard keyboard = Keyboard.current;
+            if (run != null && run.State == RaceState.Ready)
+            {
+                pitchInput = 0f;
+                turnInput = 0f;
+                braking = false;
+                if (keyboard != null && keyboard.enterKey.wasPressedThisFrame) run.StartRace();
+                return;
+            }
+
+            if (run != null && run.State == RaceState.Countdown)
+            {
+                pitchInput = 0f;
+                turnInput = 0f;
+                braking = false;
+                return;
+            }
+
             if (keyboard == null || crashed) return;
             pitchInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
             turnInput = (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f);

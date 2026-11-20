@@ -167,10 +167,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_01_Left
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -178,6 +174,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_01_Left
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -245,6 +245,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4594415847224459216, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.24
+      objectReference: {fileID: 0}
     - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_Name
       value: Pylon_01_Right
@@ -307,26 +311,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4752428152185648706, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
-    - target: {fileID: 5245235058062546463, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Finish_Pylon_Right
-      objectReference: {fileID: 0}
-    - target: {fileID: 6598873452513452286, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
-    - target: {fileID: 8456122837171203241, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -335,6 +319,22 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.87
       objectReference: {fileID: 0}
+    - target: {fileID: 4752428152185648706, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
+    - target: {fileID: 5245235058062546463, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Finish_Pylon_Right
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598873452513452286, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.86999893
@@ -343,6 +343,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.848
       objectReference: {fileID: 0}
+    - target: {fileID: 8456122837171203241, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -401,10 +405,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_04_Right
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -412,6 +412,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_04_Right
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -479,25 +483,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_05_Right
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
       objectReference: {fileID: 0}
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.87
+      value: -1.1020004
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_05_Right
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.86999893
+      value: -1.1019993
       objectReference: {fileID: 0}
     - target: {fileID: 7985173266629838001, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.848
+      value: -1.08
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -575,7 +579,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c5f463363fe44dd7bc9f3df9571e2cb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCheckpoint
   checkpointIndex: 1
 --- !u!1 &427341326
@@ -644,7 +648,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c5f463363fe44dd7bc9f3df9571e2cb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCheckpoint
   checkpointIndex: 5
 --- !u!1001 &428416536
@@ -695,10 +699,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_06_Left
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -706,6 +706,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_06_Left
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -817,13 +821,50 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 649934203}
   m_SourcePrefab: {fileID: 100100000, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
 --- !u!4 &649934201 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1950423105208151693, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
   m_PrefabInstance: {fileID: 649934200}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &649934202 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+  m_PrefabInstance: {fileID: 649934200}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &649934203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649934202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1001 &706197699
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -872,10 +913,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_03_Left
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -883,6 +920,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_03_Left
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -930,7 +971,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b284a6a1ac3fb4d85b33602d43334a79, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCameraRig
   target: {fileID: 1581216527}
   chaseOffset: {x: 0, y: 4.2, z: -14}
@@ -1051,10 +1092,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_03_Right
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -1062,6 +1099,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_03_Right
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1129,10 +1170,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_06_Right
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -1140,6 +1177,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_06_Right
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1201,7 +1242,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: af8a110ff9fd144948607dc35ef607fc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceRunManager
   checkpointCount: 6
   durationSeconds: 60
@@ -1258,25 +1299,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_02_Left
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
       objectReference: {fileID: 0}
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.87
+      value: -0.94
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_02_Left
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.86999893
+      value: -0.94000053
       objectReference: {fileID: 0}
     - target: {fileID: 7985173266629838001, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.848
+      value: -0.9180016
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1354,7 +1395,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c5f463363fe44dd7bc9f3df9571e2cb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCheckpoint
   checkpointIndex: 4
 --- !u!1001 &1122145283
@@ -1405,10 +1446,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_04_Left
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -1416,6 +1453,10 @@ PrefabInstance:
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_04_Left
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1490,13 +1531,50 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1127008141}
   m_SourcePrefab: {fileID: 100100000, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
 --- !u!4 &1127008139 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1950423105208151693, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
   m_PrefabInstance: {fileID: 1127008138}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1127008140 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+  m_PrefabInstance: {fileID: 1127008138}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1127008141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1127008140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &1140649739
 GameObject:
   m_ObjectHideFlags: 0
@@ -1563,7 +1641,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a46129b0f994e4dfd8737c4a1c83611d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceFinishGate
 --- !u!1 &1150454706
 GameObject:
@@ -1631,7 +1709,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c5f463363fe44dd7bc9f3df9571e2cb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCheckpoint
   checkpointIndex: 2
 --- !u!1001 &1272639067
@@ -1682,25 +1760,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_05_Left
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
       objectReference: {fileID: 0}
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.87
+      value: -1.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_05_Left
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.86999893
+      value: -1.0200005
       objectReference: {fileID: 0}
     - target: {fileID: 7985173266629838001, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.848
+      value: -0.9980015
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1814,7 +1892,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c5f463363fe44dd7bc9f3df9571e2cb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCheckpoint
   checkpointIndex: 0
 --- !u!1001 &1527851416
@@ -1872,13 +1950,50 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1527851419}
   m_SourcePrefab: {fileID: 100100000, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
 --- !u!4 &1527851417 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1950423105208151693, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
   m_PrefabInstance: {fileID: 1527851416}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1527851418 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+  m_PrefabInstance: {fileID: 1527851416}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1527851419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1527851418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &1568018332
 GameObject:
   m_ObjectHideFlags: 0
@@ -1987,7 +2102,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -2016,7 +2131,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1012997493607794589, guid: 7081e1d88a9784a16881146247724840, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -72
+      value: -120
       objectReference: {fileID: 0}
     - target: {fileID: 1012997493607794589, guid: 7081e1d88a9784a16881146247724840, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2134,7 +2249,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c5f463363fe44dd7bc9f3df9571e2cb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirRace.Gameplay.AirRaceCheckpoint
   checkpointIndex: 3
 --- !u!1001 &1754442604
@@ -2185,25 +2300,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Pylon_02_Right
-      objectReference: {fileID: 0}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
       objectReference: {fileID: 0}
     - target: {fileID: 3971846852781641498, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.87
+      value: -1.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Pylon_02_Right
       objectReference: {fileID: 0}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.86999893
+      value: -1.0299988
       objectReference: {fileID: 0}
     - target: {fileID: 7985173266629838001, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.848
+      value: -1.0079999
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2417,13 +2532,50 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1814112954}
   m_SourcePrefab: {fileID: 100100000, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
 --- !u!4 &1814112952 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1950423105208151693, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
   m_PrefabInstance: {fileID: 1814112951}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1814112953 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+  m_PrefabInstance: {fileID: 1814112951}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1814112954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814112953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1001 &1877402135
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2504,7 +2656,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -2603,26 +2755,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4752428152185648706, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
-    - target: {fileID: 5245235058062546463, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
-    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: m_Name
-      value: Finish_Pylon_Left
-      objectReference: {fileID: 0}
-    - target: {fileID: 6598873452513452286, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
-    - target: {fileID: 8456122837171203241, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value:
-      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
     - target: {fileID: 3481748396549070301, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.97
@@ -2631,6 +2763,22 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.87
       objectReference: {fileID: 0}
+    - target: {fileID: 4752428152185648706, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
+    - target: {fileID: 5245235058062546463, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
+    - target: {fileID: 6304559254838645268, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: m_Name
+      value: Finish_Pylon_Left
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598873452513452286, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
     - target: {fileID: 7481983167238808949, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.86999893
@@ -2639,6 +2787,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.848
       objectReference: {fileID: 0}
+    - target: {fileID: 8456122837171203241, guid: adbfd9fa0309644a486464ad851aaba7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e42374f28c52b4386a04367338a861c2, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2889,13 +3041,50 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2115208954}
   m_SourcePrefab: {fileID: 100100000, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
 --- !u!4 &2115208952 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1950423105208151693, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
   m_PrefabInstance: {fileID: 2115208951}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2115208953 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3205868783938774703, guid: 06988c8b43ca1449f8dfa2604b9e8758, type: 3}
+  m_PrefabInstance: {fileID: 2115208951}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2115208954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115208953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

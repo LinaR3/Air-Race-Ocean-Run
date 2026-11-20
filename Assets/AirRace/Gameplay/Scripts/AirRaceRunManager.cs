@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AirRace.Gameplay
 {
-    public enum RaceState { Racing, Won, Failed }
+    public enum RaceState { Ready, Countdown, Racing, Won, Failed }
 
     public sealed class AirRaceRunManager : MonoBehaviour
     {
@@ -15,13 +15,15 @@ namespace AirRace.Gameplay
         [SerializeField] private float canEnergy = 30f;
         [SerializeField] private int maximumBoostCharges = 3;
         [SerializeField] private float comboInputWindow = 0.9f;
+        [SerializeField] private float startCountdownSeconds = 3f;
 
-        public RaceState State { get; private set; } = RaceState.Racing;
+        public RaceState State { get; private set; } = RaceState.Ready;
         public int NextCheckpoint { get; private set; }
         public int Score { get; private set; }
         public int BoostCharges { get; private set; }
         public float Energy { get; private set; } = 72f;
         public float TimeRemaining { get; private set; }
+        public float CountdownRemaining { get; private set; }
         public float BoostTimeRemaining { get; private set; }
         public float ImpactFeedbackRemaining { get; private set; }
         public int Combo { get; private set; }
@@ -43,6 +45,13 @@ namespace AirRace.Gameplay
 
         private void Update()
         {
+            if (State == RaceState.Countdown)
+            {
+                CountdownRemaining = Mathf.Max(0f, CountdownRemaining - Time.deltaTime);
+                if (CountdownRemaining <= 0f) State = RaceState.Racing;
+                return;
+            }
+
             if (State != RaceState.Racing) return;
 
             ImpactFeedbackRemaining = Mathf.Max(0f, ImpactFeedbackRemaining - Time.deltaTime);
@@ -54,6 +63,14 @@ namespace AirRace.Gameplay
 
             if (Energy <= 0f) Fail("La energía de vuelo se agotó");
             else if (TimeRemaining <= 0f) Fail("Se agotó el tiempo");
+        }
+
+        public bool StartRace()
+        {
+            if (State != RaceState.Ready) return false;
+            CountdownRemaining = Mathf.Max(0.1f, startCountdownSeconds);
+            State = RaceState.Countdown;
+            return true;
         }
 
         public bool PassCheckpoint(int checkpointIndex)

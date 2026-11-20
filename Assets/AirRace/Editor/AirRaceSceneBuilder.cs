@@ -187,7 +187,8 @@ namespace AirRace.EditorTools
 
             var plane = (GameObject)PrefabUtility.InstantiatePrefab(aircraftPrefab, scene);
             plane.name = "Aircraft_Player";
-            plane.transform.position = gatePositions[0] - startDirection * 72f;
+            // Give players enough approach distance to read and line up with the first gate.
+            plane.transform.position = gatePositions[0] - startDirection * 120f;
             plane.transform.position = new Vector3(plane.transform.position.x, gatePositions[0].y, plane.transform.position.z);
             plane.transform.rotation = Quaternion.LookRotation(startDirection, Vector3.up);
 
