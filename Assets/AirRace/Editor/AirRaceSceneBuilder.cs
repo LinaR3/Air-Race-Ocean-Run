@@ -15,6 +15,10 @@ namespace AirRace.EditorTools
         private const string PylonPath = Root + "/Art/Models/Pylons/AirRace_Pylon_SwimRaft.prefab";
         private const string AircraftPath = Root + "/Gameplay/Prefabs/Aircraft_Player.prefab";
         private const string CanPath = Root + "/Gameplay/Prefabs/Energy_Can_Blockout.prefab";
+        private const float WaterSurfaceY = -4.5f;
+        // Measured from the user's corrected floating-pylon instance in the open map scene.
+        private const float PylonRootY = -6.59f;
+        private static readonly float[] PylonBandVerticalOffsets = { -0.97f, -0.87f, -0.848f, -0.87f };
 
         [MenuItem("Air Race/Build Level 01 Map")]
         public static void BuildMap()
@@ -69,7 +73,7 @@ namespace AirRace.EditorTools
             {
                 var sea = (GameObject)PrefabUtility.InstantiatePrefab(waterPrefab, scene);
                 sea.name = "AURW_Ocean_Play_Area_4800m";
-                sea.transform.position = new Vector3(0f, -4.5f, 0f);
+                sea.transform.position = new Vector3(0f, WaterSurfaceY, 0f);
                 // 4.8 km square ocean; the invisible play boundary is at 900 m.
                 // The plane's far edge remains beyond the camera's far clip distance.
                 sea.transform.localScale = new Vector3(48f, 1f, 48f);
@@ -78,7 +82,7 @@ namespace AirRace.EditorTools
             {
                 var sea = GameObject.CreatePrimitive(PrimitiveType.Plane);
                 sea.name = "Ocean_Surface_Blockout";
-                sea.transform.position = new Vector3(0f, -4.5f, 0f);
+                sea.transform.position = new Vector3(0f, WaterSurfaceY, 0f);
                 sea.transform.localScale = new Vector3(480f, 1f, 480f);
                 sea.GetComponent<Renderer>().sharedMaterial = MakeMaterial("Ocean_Teal_Blockout", new Color(0.025f, 0.34f, 0.47f), 0.72f);
             }
@@ -136,8 +140,9 @@ namespace AirRace.EditorTools
                     GameObject pylon = (GameObject)PrefabUtility.InstantiatePrefab(pylonPrefab, scene);
                     pylon.name = "Pylon_" + (i + 1).ToString("00") + (side < 0 ? "_Left" : "_Right");
                     pylon.transform.SetParent(gate.transform, false);
-                    pylon.transform.localPosition = new Vector3(side * 12f, -gatePositions[i].y - 0.2f, 0f);
+                    pylon.transform.localPosition = new Vector3(side * 12f, PylonRootY - gatePositions[i].y, 0f);
                     pylon.transform.localRotation = Quaternion.identity;
+                    ApplyPylonBandProfile(pylon);
                 }
             }
 
@@ -154,11 +159,13 @@ namespace AirRace.EditorTools
             var finishLeft = (GameObject)PrefabUtility.InstantiatePrefab(pylonPrefab, scene);
             finishLeft.name = "Finish_Pylon_Left";
             finishLeft.transform.SetParent(finish.transform, false);
-            finishLeft.transform.localPosition = new Vector3(-14f, -14.2f, 0f);
+            finishLeft.transform.localPosition = new Vector3(-14f, PylonRootY - finish.transform.position.y, 0f);
+            ApplyPylonBandProfile(finishLeft);
             var finishRight = (GameObject)PrefabUtility.InstantiatePrefab(pylonPrefab, scene);
             finishRight.name = "Finish_Pylon_Right";
             finishRight.transform.SetParent(finish.transform, false);
-            finishRight.transform.localPosition = new Vector3(14f, -14.2f, 0f);
+            finishRight.transform.localPosition = new Vector3(14f, PylonRootY - finish.transform.position.y, 0f);
+            ApplyPylonBandProfile(finishRight);
             var finishGold = MakeMaterial("Finish_Pylon_Gold", new Color(1f, 0.68f, 0.04f));
             ColorizeFinishPylon(finishLeft, finishGold);
             ColorizeFinishPylon(finishRight, finishGold);
@@ -246,6 +253,21 @@ namespace AirRace.EditorTools
                 var materials = renderer.sharedMaterials;
                 for (int i = 0; i < materials.Length; i++) materials[i] = gold;
                 renderer.sharedMaterials = materials;
+            }
+        }
+
+        private static void ApplyPylonBandProfile(GameObject pylon)
+        {
+            Transform inflatable = pylon.transform.Find("Inflatable_Pylon_25m");
+            if (inflatable == null) return;
+            string[] bandNames = { "Pylon_Band_01", "Pylon_Band_02", "Pylon_Band_03", "Pylon_Band_04" };
+            for (int i = 0; i < bandNames.Length; i++)
+            {
+                Transform band = inflatable.Find(bandNames[i]);
+                if (band == null) continue;
+                Vector3 position = band.localPosition;
+                position.y = PylonBandVerticalOffsets[i];
+                band.localPosition = position;
             }
         }
     }
