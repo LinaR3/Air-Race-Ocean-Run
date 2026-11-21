@@ -40,8 +40,8 @@ namespace AirRace.Gameplay
         private void Update()
         {
             if (aircraft == null || run == null) return;
-            float targetRate = run.IsBoosting ? 38f : aircraft.IsTurning ? 14f : 0f;
-            wingEmission = Mathf.MoveTowards(wingEmission, targetRate, 120f * Time.deltaTime);
+            float targetRate = run.IsBoosting ? 15f : aircraft.IsTurning ? 5f : 0f;
+            wingEmission = Mathf.MoveTowards(wingEmission, targetRate, 48f * Time.deltaTime);
             SetRate(leftWingTrail, wingEmission);
             SetRate(rightWingTrail, wingEmission);
         }
@@ -76,26 +76,26 @@ namespace AirRace.Gameplay
             var main = system.main;
             main.loop = true;
             main.playOnAwake = false;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(1.15f, 2.05f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(1.1f, 2.5f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.7f, 1.25f);
-            main.startColor = new Color(0.91f, 0.94f, 0.98f, 0.58f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(1.8f, 3.2f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.28f, 0.85f);
+            main.startSize = new ParticleSystem.MinMaxCurve(1.2f, 2.0f);
+            main.startColor = new Color(0.91f, 0.94f, 0.98f, 0.68f);
+            main.gravityModifier = -0.025f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 220;
+            main.maxParticles = 150;
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             var emission = system.emission;
             emission.enabled = true;
             emission.rateOverTime = 0f;
             var shape = system.shape;
             shape.enabled = true;
-            shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = 12f;
-            shape.radius = 0.18f;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.42f;
             var noise = system.noise;
             noise.enabled = true;
-            noise.strength = new ParticleSystem.MinMaxCurve(0.42f, 0.82f);
-            noise.frequency = 0.48f;
-            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.08f);
+            noise.strength = new ParticleSystem.MinMaxCurve(0.12f, 0.3f);
+            noise.frequency = 0.28f;
+            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.045f);
             noise.damping = true;
             noise.quality = ParticleSystemNoiseQuality.Low;
             var color = system.colorOverLifetime;
@@ -103,12 +103,12 @@ namespace AirRace.Gameplay
             var gradient = new Gradient();
             gradient.SetKeys(
                 new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.84f, 0.87f, 0.91f), 0.74f), new GradientColorKey(new Color(0.72f, 0.76f, 0.81f), 1f) },
-                new[] { new GradientAlphaKey(0.18f, 0f), new GradientAlphaKey(0.42f, 0.16f), new GradientAlphaKey(0.29f, 0.68f), new GradientAlphaKey(0f, 1f) });
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.56f, 0.18f), new GradientAlphaKey(0.42f, 0.62f), new GradientAlphaKey(0f, 1f) });
             color.color = gradient;
             var size = system.sizeOverLifetime;
             size.enabled = true;
             size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
-                new Keyframe(0f, 0.62f), new Keyframe(0.24f, 1f), new Keyframe(1f, 2.15f)));
+                new Keyframe(0f, 0.38f), new Keyframe(0.2f, 1f), new Keyframe(1f, 2.65f)));
             ConfigureSmokeRenderer(go.GetComponent<ParticleSystemRenderer>());
             return system;
         }
