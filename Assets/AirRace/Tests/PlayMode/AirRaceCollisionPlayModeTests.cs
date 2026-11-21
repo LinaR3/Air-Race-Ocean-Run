@@ -153,7 +153,7 @@ namespace AirRace.Tests
             Assert.That(checkpointLabelTransform, Is.Not.Null);
             Assert.That(radarTransform, Is.Not.Null, "The HUD should show the actual checkpoint route radar.");
             TMP_Text checkpointText = checkpointLabelTransform.GetComponent<TMP_Text>();
-            Assert.That(checkpointText.text, Does.Contain("PUERTA 01"));
+            Assert.That(checkpointText.text, Does.Contain("PUERTA 01 / 06"));
 
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
             MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
@@ -244,20 +244,20 @@ namespace AirRace.Tests
             GameObject.Find("START_OPTIONS").GetComponent<Button>().onClick.Invoke();
             yield return null;
             Assert.That(GameObject.Find("OPTIONS_TITLE"), Is.Not.Null, "Options must open from the main menu.");
-            Assert.That(GameObject.Find("Race_Options_Overlay").activeSelf, Is.True);
-            Assert.That(GameObject.Find("Race_Start_Overlay").activeSelf, Is.False, "Options should not leave the main menu controls layered behind it.");
+            Assert.That(FindUiObject("Race_Options_Overlay").activeSelf, Is.True);
+            Assert.That(FindUiObject("Race_Start_Overlay").activeSelf, Is.False, "Options should not leave the main menu controls layered behind it.");
             Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "OPTIONS_BACK").onClick.Invoke();
             yield return null;
-            Assert.That(GameObject.Find("Race_Options_Overlay").activeSelf, Is.False);
-            Assert.That(GameObject.Find("Race_Start_Overlay").activeSelf, Is.True);
+            Assert.That(FindUiObject("Race_Options_Overlay").activeSelf, Is.False);
+            Assert.That(FindUiObject("Race_Start_Overlay").activeSelf, Is.True);
             GameObject.Find("START_EXIT").GetComponent<Button>().onClick.Invoke();
             yield return null;
             Assert.That(GameObject.Find("EXIT_NOTICE"), Is.Not.Null, "Web exit must explain how to leave the game.");
             Assert.That(GameObject.Find("Race_Exit_Overlay").activeSelf, Is.True);
-            Assert.That(GameObject.Find("Race_Start_Overlay").activeSelf, Is.False, "Exit notice should replace the main menu state.");
+            Assert.That(FindUiObject("Race_Start_Overlay").activeSelf, Is.False, "Exit notice should replace the main menu state.");
             Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "EXIT_BACK").onClick.Invoke();
             yield return null;
-            Assert.That(GameObject.Find("Race_Exit_Overlay").activeSelf, Is.False);
+            Assert.That(FindUiObject("Race_Exit_Overlay").activeSelf, Is.False);
             play.GetComponent<Button>().onClick.Invoke();
 
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
@@ -351,6 +351,12 @@ namespace AirRace.Tests
         {
             manager.GetType().GetMethod("StartRace").Invoke(manager, null);
             manager.GetType().GetProperty("CountdownRemaining").SetValue(manager, 0f);
+        }
+
+        private static GameObject FindUiObject(string name)
+        {
+            return Resources.FindObjectsOfTypeAll<GameObject>()
+                .First(gameObject => gameObject.scene.IsValid() && gameObject.name == name);
         }
     }
 }

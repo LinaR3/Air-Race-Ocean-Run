@@ -105,7 +105,7 @@ namespace AirRace.Gameplay
             if (run.NextCheckpoint < checkpoints.Length)
             {
                 float distance = Vector3.Distance(aircraft.transform.position, checkpoints[run.NextCheckpoint].transform.position);
-                gateValue.text = $"SIGUIENTE PUERTA  {run.NextCheckpoint + 1:00} / {checkpoints.Length:00}     ·     {Mathf.RoundToInt(distance)} m";
+                gateValue.text = $"SIGUIENTE PUERTA {run.NextCheckpoint + 1:00} / {checkpoints.Length:00}     ·     {Mathf.RoundToInt(distance)} m";
             }
             else gateValue.text = "RUTA COMPLETA  ·  CRUZA LA META";
         }
@@ -126,7 +126,7 @@ namespace AirRace.Gameplay
 
             raceLayer = MakeRect("Race_HUD", canvasObject.transform).gameObject;
             AddTopScrim(raceLayer.transform);
-            pauseButton = ActionButton("PAUSE_BUTTON", raceLayer.transform, "Ⅱ", new Vector2(1f, 1f), new Vector2(-44f, -46f), new Vector2(78f, 58f), Navy, () => run.PauseRace()).gameObject;
+            pauseButton = ActionButton("PAUSE_BUTTON", raceLayer.transform, "PAUSA", new Vector2(1f, 1f), new Vector2(-58f, -46f), new Vector2(100f, 58f), Navy, () => run.PauseRace()).gameObject;
 
             // Open-center HUD: no opaque dashboard covering the flight view.
             Label("SPEED_LABEL", raceLayer.transform, "VELOCIDAD", 16, Muted, new Vector2(0f, 1f), new Vector2(52f, -34f), new Vector2(175f, 25f), TextAlignmentOptions.Left);
@@ -150,7 +150,7 @@ namespace AirRace.Gameplay
             radarRect.anchoredPosition = new Vector2(40f, 65f);
             radarRect.sizeDelta = new Vector2(230f, 230f);
             radar = radarObject.GetComponent<AirRaceRadarDisplay>();
-            gateValue = Label("ACTIVE_GATE", raceLayer.transform, "SIGUIENTE PUERTA  01 / 06 · 000 m", 18, White, new Vector2(0f, 0f), new Vector2(42f, 28f), new Vector2(420f, 32f), TextAlignmentOptions.Left);
+            gateValue = Label("ACTIVE_GATE", raceLayer.transform, "SIGUIENTE PUERTA 01 / 06 · 000 m", 18, White, new Vector2(0f, 0f), new Vector2(42f, 28f), new Vector2(420f, 32f), TextAlignmentOptions.Left);
 
             energyValue = Label("ENERGY_VALUE", raceLayer.transform, "ENERGÍA 72%", 19, White, new Vector2(1f, 0f), new Vector2(-48f, 105f), new Vector2(345f, 30f), TextAlignmentOptions.Right);
             Box("ENERGY_BAR_BACK", raceLayer.transform, new Color(0.01f, 0.025f, 0.08f, 0.72f), new Vector2(1f, 0f), new Vector2(-48f, 78f), new Vector2(330f, 9f));
