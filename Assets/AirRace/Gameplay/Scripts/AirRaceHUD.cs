@@ -18,12 +18,17 @@ namespace AirRace.Gameplay
         private AirRaceRunManager run;
         private AircraftFlightController aircraft;
         private AirRaceRadarDisplay radar;
+        private Transform finishGate;
         private AirRaceCheckpoint[] checkpoints = Array.Empty<AirRaceCheckpoint>();
         private TMP_Text timeValue, speedValue, altitudeValue, gateValue, scoreValue, energyValue, boostValue;
         private TMP_Text resultTitle, resultDetails, startPrompt, countdownValue;
         private Image energyFill;
         private GameObject raceLayer, startLayer, resultLayer, pauseLayer, optionsLayer, exitLayer;
         private GameObject pauseButton, startButtons;
+        private GameObject checkpointBanner;
+        private CanvasGroup checkpointBannerGroup;
+        private TMP_Text checkpointBannerTitle;
+        private float checkpointBannerRemaining;
         private TMP_Text[] startControlLines;
         private float radarUpdateTimer;
         private bool showingOptions;
@@ -33,8 +38,11 @@ namespace AirRace.Gameplay
         {
             run = manager;
             aircraft = FindFirstObjectByType<AircraftFlightController>();
+            GameObject finishObject = GameObject.Find("Finish_Marker_07");
+            finishGate = finishObject != null ? finishObject.transform : null;
             checkpoints = FindObjectsByType<AirRaceCheckpoint>(FindObjectsSortMode.None);
             Array.Sort(checkpoints, (a, b) => a.Index.CompareTo(b.Index));
+            run.CheckpointPassed += ShowCheckpointPassed;
             Build();
         }
 
@@ -44,6 +52,7 @@ namespace AirRace.Gameplay
             bool racing = run.State == RaceState.Racing;
             bool paused = run.State == RaceState.Paused;
             bool terminal = run.State == RaceState.Won || run.State == RaceState.Failed;
+            UpdateCheckpointBanner(racing);
             raceLayer.SetActive(racing);
             pauseButton.SetActive(racing);
             pauseLayer.SetActive(paused && !showingOptions && !showingExit);
@@ -99,13 +108,19 @@ namespace AirRace.Gameplay
                 AirRaceCanPickup[] pickupObjects = FindObjectsByType<AirRaceCanPickup>(FindObjectsSortMode.None);
                 Vector3[] canPositions = new Vector3[pickupObjects.Length];
                 for (int i = 0; i < pickupObjects.Length; i++) canPositions[i] = pickupObjects[i].transform.position;
-                radar.SetRoute(aircraft.transform.position, aircraft.Heading, gatePositions, run.NextCheckpoint, canPositions);
+                Vector3 finishPosition = finishGate != null ? finishGate.position : Vector3.zero;
+                radar.SetRoute(aircraft.transform.position, aircraft.Heading, gatePositions, run.NextCheckpoint, canPositions, finishPosition, finishGate != null);
             }
 
             if (run.NextCheckpoint < checkpoints.Length)
             {
                 float distance = Vector3.Distance(aircraft.transform.position, checkpoints[run.NextCheckpoint].transform.position);
                 gateValue.text = $"SIGUIENTE PUERTA {run.NextCheckpoint + 1:00} / {checkpoints.Length:00}     ·     {Mathf.RoundToInt(distance)} m";
+            }
+            else if (finishGate != null)
+            {
+                float distance = Vector3.Distance(aircraft.transform.position, finishGate.position);
+                gateValue.text = $"META FINAL  ·  {Mathf.RoundToInt(distance)} m  ·  SIGUE EL PUNTO ROJO";
             }
             else gateValue.text = "RUTA COMPLETA  ·  CRUZA LA META";
         }
@@ -151,6 +166,7 @@ namespace AirRace.Gameplay
             radarRect.sizeDelta = new Vector2(230f, 230f);
             radar = radarObject.GetComponent<AirRaceRadarDisplay>();
             gateValue = Label("ACTIVE_GATE", raceLayer.transform, "SIGUIENTE PUERTA 01 / 06 · 000 m", 18, White, new Vector2(0f, 0f), new Vector2(42f, 28f), new Vector2(420f, 32f), TextAlignmentOptions.Left);
+            BuildCheckpointBanner(raceLayer.transform);
 
             energyValue = Label("ENERGY_VALUE", raceLayer.transform, "ENERGÍA 72%", 19, White, new Vector2(1f, 0f), new Vector2(-48f, 105f), new Vector2(345f, 30f), TextAlignmentOptions.Right);
             Box("ENERGY_BAR_BACK", raceLayer.transform, new Color(0.01f, 0.025f, 0.08f, 0.72f), new Vector2(1f, 0f), new Vector2(-48f, 78f), new Vector2(330f, 9f));
@@ -209,6 +225,56 @@ namespace AirRace.Gameplay
             Label("EXIT_NOTICE", exitLayer.transform, "GRACIAS POR JUGAR\nCIERRA ESTA PESTAÑA PARA SALIR", 28, White, new Vector2(0.5f, 0.5f), new Vector2(0f, 48f), new Vector2(900f, 120f), TextAlignmentOptions.Center);
             ActionButton("EXIT_BACK", exitLayer.transform, "VOLVER", new Vector2(0.5f, 0.5f), new Vector2(0f, -68f), new Vector2(300f, 58f), Blue, () => ShowExit(true));
             exitLayer.SetActive(false);
+        }
+
+        private void BuildCheckpointBanner(Transform parent)
+        {
+            checkpointBanner = new GameObject("CHECKPOINT_PASSED_BANNER", typeof(RectTransform), typeof(CanvasGroup));
+            checkpointBanner.transform.SetParent(parent, false);
+            RectTransform rect = checkpointBanner.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -156f);
+            rect.sizeDelta = new Vector2(500f, 62f);
+            checkpointBannerGroup = checkpointBanner.GetComponent<CanvasGroup>();
+            Box("BANNER_GLASS", checkpointBanner.transform, new Color(0.006f, 0.035f, 0.09f, 0.68f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(500f, 62f));
+            Box("BANNER_ACCENT", checkpointBanner.transform, Yellow, new Vector2(0f, 0.5f), new Vector2(4f, 0f), new Vector2(5f, 62f));
+            checkpointBannerTitle = Label("BANNER_CHECKPOINT_TEXT", checkpointBanner.transform, "CHECKPOINT 01 PASADO", 22, White, new Vector2(0f, 0.5f), new Vector2(24f, 0f), new Vector2(330f, 44f), TextAlignmentOptions.Left);
+            Label("BANNER_POINTS", checkpointBanner.transform, "+10 PTS", 20, Yellow, new Vector2(1f, 0.5f), new Vector2(-18f, 0f), new Vector2(125f, 40f), TextAlignmentOptions.Right);
+            checkpointBanner.SetActive(false);
+        }
+
+        private void ShowCheckpointPassed(int checkpointNumber)
+        {
+            if (checkpointBanner == null) return;
+            checkpointBannerTitle.text = $"CHECKPOINT {checkpointNumber:00} PASADO";
+            checkpointBannerRemaining = 1.45f;
+            checkpointBannerGroup.alpha = 1f;
+            checkpointBanner.transform.localScale = Vector3.one * 0.96f;
+            checkpointBanner.SetActive(true);
+        }
+
+        private void UpdateCheckpointBanner(bool racing)
+        {
+            if (checkpointBanner == null) return;
+            checkpointBannerRemaining = Mathf.Max(0f, checkpointBannerRemaining - Time.unscaledDeltaTime);
+            if (!racing || checkpointBannerRemaining <= 0f)
+            {
+                checkpointBanner.SetActive(false);
+                return;
+            }
+
+            checkpointBanner.SetActive(true);
+            float fadeOut = Mathf.Clamp01(checkpointBannerRemaining / 0.3f);
+            float intro = 1f - Mathf.Clamp01((1.45f - checkpointBannerRemaining) / 0.16f);
+            checkpointBannerGroup.alpha = Mathf.Min(1f, intro * 1.12f) * fadeOut;
+            float scale = Mathf.Lerp(1.015f, 1f, Mathf.Clamp01((1.45f - checkpointBannerRemaining) / 0.18f));
+            checkpointBanner.transform.localScale = Vector3.one * scale;
+        }
+
+        private void OnDestroy()
+        {
+            if (run != null) run.CheckpointPassed -= ShowCheckpointPassed;
         }
 
         private void SetControlLines(bool visible)

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace AirRace.Gameplay
@@ -7,6 +8,7 @@ namespace AirRace.Gameplay
     public sealed class AirRaceRunManager : MonoBehaviour
     {
         public static AirRaceRunManager Instance { get; private set; }
+        public event Action<int> CheckpointPassed;
 
         [SerializeField] private int checkpointCount = 6;
         [SerializeField] private float durationSeconds = 60f;
@@ -103,6 +105,7 @@ namespace AirRace.Gameplay
             GameObject gate = GameObject.Find("Checkpoint_" + (checkpointIndex + 1).ToString("00"));
             if (gate != null && AirRaceVFXController.Instance != null)
                 AirRaceVFXController.Instance.CheckpointPassed(gate.transform.position);
+            CheckpointPassed?.Invoke(checkpointIndex + 1);
             return true;
         }
 

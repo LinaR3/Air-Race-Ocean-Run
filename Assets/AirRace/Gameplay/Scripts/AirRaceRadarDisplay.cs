@@ -12,14 +12,18 @@ namespace AirRace.Gameplay
         private Vector3[] checkpoints = new Vector3[0];
         private Vector3[] cans = new Vector3[0];
         private int nextCheckpoint;
+        private Vector3 finishPosition;
+        private bool hasFinish;
 
-        public void SetRoute(Vector3 position, float yaw, Vector3[] gates, int next, Vector3[] pickups)
+        public void SetRoute(Vector3 position, float yaw, Vector3[] gates, int next, Vector3[] pickups, Vector3 finish, bool includeFinish)
         {
             aircraftPosition = position;
             heading = yaw;
             checkpoints = gates ?? new Vector3[0];
             cans = pickups ?? new Vector3[0];
             nextCheckpoint = next;
+            finishPosition = finish;
+            hasFinish = includeFinish;
             SetVerticesDirty();
         }
 
@@ -58,6 +62,12 @@ namespace AirRace.Gameplay
                         i < nextCheckpoint ? new Color(0.36f, 0.62f, 0.58f, 0.95f) : Color.white;
                     DrawCircle(vh, p, i == nextCheckpoint ? 7f : 4.2f, gateColor, 3f, 12);
                 }
+            }
+
+            if (hasFinish)
+            {
+                Vector2 finish = ToRadar(finishPosition, center, radius);
+                DrawCircle(vh, finish, 7.5f, new Color(1f, 0.22f, 0.16f, 1f), 3f, 16);
             }
 
             foreach (Vector3 can in cans)

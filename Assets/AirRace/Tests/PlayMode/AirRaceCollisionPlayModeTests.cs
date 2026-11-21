@@ -163,6 +163,49 @@ namespace AirRace.Tests
             manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { 0 });
             yield return null;
             Assert.That(checkpointText.text, Does.Contain("PUERTA 02"), "The HUD should display the next active checkpoint.");
+            TMP_Text passedBanner = hudCanvas.transform.Find("Race_HUD/CHECKPOINT_PASSED_BANNER/BANNER_CHECKPOINT_TEXT").GetComponent<TMP_Text>();
+            Assert.That(passedBanner.text, Does.Contain("CHECKPOINT 01 PASADO"), "Passing a gate should display a clear temporary confirmation.");
+        }
+
+        [UnityTest]
+        public IEnumerator FinishGate_TriggersOnlyAfterAllSixCheckpointsAndCanBeReachedOnTheRoute()
+        {
+            SceneManager.LoadScene(SceneName);
+            yield return null;
+            yield return new WaitForFixedUpdate();
+
+            GameObject aircraft = GameObject.Find("Aircraft_Player");
+            GameObject finish = GameObject.Find("Finish_Marker_07");
+            GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
+            Assert.That(aircraft, Is.Not.Null);
+            Assert.That(finish, Is.Not.Null);
+            MonoBehaviour manager = managerObject.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AirRaceRunManager");
+            BeginRaceImmediatelyForTest(manager);
+            yield return null;
+            manager.GetType().GetMethod("TryFinish").Invoke(manager, null);
+            Assert.That(manager.GetType().GetProperty("State").GetValue(manager).ToString(), Is.EqualTo("Racing"),
+                "Crossing the finish early must not end the race.");
+
+            for (int checkpoint = 0; checkpoint < 6; checkpoint++)
+                Assert.That((bool)manager.GetType().GetMethod("PassCheckpoint").Invoke(manager, new object[] { checkpoint }), Is.True);
+
+            MonoBehaviour flightController = aircraft.GetComponents<MonoBehaviour>()
+                .First(component => component.GetType().Name == "AircraftFlightController");
+            flightController.enabled = false;
+            Rigidbody body = aircraft.GetComponent<Rigidbody>();
+            Vector3 approach = finish.transform.forward;
+            Vector3 start = finish.transform.position - approach * 18f;
+            aircraft.transform.SetPositionAndRotation(start, Quaternion.LookRotation(approach, Vector3.up));
+            body.position = start;
+            body.rotation = aircraft.transform.rotation;
+            body.linearVelocity = approach * 32f;
+            body.angularVelocity = Vector3.zero;
+            Physics.SyncTransforms();
+            for (int i = 0; i < 20 && manager.GetType().GetProperty("State").GetValue(manager).ToString() == "Racing"; i++)
+                yield return new WaitForFixedUpdate();
+            Assert.That(manager.GetType().GetProperty("State").GetValue(manager).ToString(), Is.EqualTo("Won"),
+                "The real finish trigger should show the result after all six route gates have been crossed.");
         }
 
         [UnityTest]
@@ -324,7 +367,7 @@ namespace AirRace.Tests
             Assert.That(leftSystem.noise.enabled, Is.True, "Smoke puffs need turbulent motion.");
             Assert.That(leftSystem.colorOverLifetime.enabled, Is.True);
             Assert.That(leftSystem.sizeOverLifetime.enabled, Is.True, "Particles should swell and dissolve like smoke.");
-            Assert.That(leftSystem.main.startLifetime.constantMax, Is.GreaterThanOrEqualTo(3f), "Smoke should linger long enough to form a soft trail.");
+            Assert.That(leftSystem.main.startLifetime.constantMax, Is.GreaterThanOrEqualTo(3f), "Smoke should linger long enough to form a continuous trail.");
             Assert.That(leftSystem.main.startSize.constantMin, Is.GreaterThanOrEqualTo(1f), "Smoke particles should read as soft puffs, not tiny dots.");
             Assert.That(leftSmoke.GetComponent<ParticleSystemRenderer>().sharedMaterial.mainTexture, Is.Not.Null,
                 "The smoke renderer needs a soft, noisy particle texture.");
