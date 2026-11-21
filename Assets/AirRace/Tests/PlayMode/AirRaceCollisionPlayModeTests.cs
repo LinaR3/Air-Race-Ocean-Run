@@ -242,11 +242,22 @@ namespace AirRace.Tests
             Assert.That(GameObject.Find("START_OPTIONS"), Is.Not.Null);
             Assert.That(GameObject.Find("START_EXIT"), Is.Not.Null);
             GameObject.Find("START_OPTIONS").GetComponent<Button>().onClick.Invoke();
+            yield return null;
             Assert.That(GameObject.Find("OPTIONS_TITLE"), Is.Not.Null, "Options must open from the main menu.");
+            Assert.That(GameObject.Find("Race_Options_Overlay").activeSelf, Is.True);
+            Assert.That(GameObject.Find("Race_Start_Overlay").activeSelf, Is.False, "Options should not leave the main menu controls layered behind it.");
             Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "OPTIONS_BACK").onClick.Invoke();
+            yield return null;
+            Assert.That(GameObject.Find("Race_Options_Overlay").activeSelf, Is.False);
+            Assert.That(GameObject.Find("Race_Start_Overlay").activeSelf, Is.True);
             GameObject.Find("START_EXIT").GetComponent<Button>().onClick.Invoke();
+            yield return null;
             Assert.That(GameObject.Find("EXIT_NOTICE"), Is.Not.Null, "Web exit must explain how to leave the game.");
+            Assert.That(GameObject.Find("Race_Exit_Overlay").activeSelf, Is.True);
+            Assert.That(GameObject.Find("Race_Start_Overlay").activeSelf, Is.False, "Exit notice should replace the main menu state.");
             Resources.FindObjectsOfTypeAll<Button>().First(button => button.name == "EXIT_BACK").onClick.Invoke();
+            yield return null;
+            Assert.That(GameObject.Find("Race_Exit_Overlay").activeSelf, Is.False);
             play.GetComponent<Button>().onClick.Invoke();
 
             GameObject managerObject = GameObject.Find("AirRace_Run_Manager");
@@ -313,6 +324,8 @@ namespace AirRace.Tests
             Assert.That(leftSystem.noise.enabled, Is.True, "Smoke puffs need turbulent motion.");
             Assert.That(leftSystem.colorOverLifetime.enabled, Is.True);
             Assert.That(leftSystem.sizeOverLifetime.enabled, Is.True, "Particles should swell and dissolve like smoke.");
+            Assert.That(leftSystem.main.startLifetime.constantMax, Is.GreaterThanOrEqualTo(3f), "Smoke should linger long enough to form a soft trail.");
+            Assert.That(leftSystem.main.startSize.constantMin, Is.GreaterThanOrEqualTo(1f), "Smoke particles should read as soft puffs, not tiny dots.");
             Assert.That(leftSmoke.GetComponent<ParticleSystemRenderer>().sharedMaterial.mainTexture, Is.Not.Null,
                 "The smoke renderer needs a soft, noisy particle texture.");
 
