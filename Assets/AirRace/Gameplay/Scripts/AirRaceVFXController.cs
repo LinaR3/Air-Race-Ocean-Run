@@ -40,8 +40,8 @@ namespace AirRace.Gameplay
         private void Update()
         {
             if (aircraft == null || run == null) return;
-            float targetRate = run.IsBoosting ? 15f : aircraft.IsTurning ? 5f : 0f;
-            wingEmission = Mathf.MoveTowards(wingEmission, targetRate, 48f * Time.deltaTime);
+            float targetRate = run.IsBoosting ? 32f : aircraft.IsTurning ? 12f : 0f;
+            wingEmission = Mathf.MoveTowards(wingEmission, targetRate, 72f * Time.deltaTime);
             SetRate(leftWingTrail, wingEmission);
             SetRate(rightWingTrail, wingEmission);
         }
@@ -76,26 +76,27 @@ namespace AirRace.Gameplay
             var main = system.main;
             main.loop = true;
             main.playOnAwake = false;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(1.8f, 3.2f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(0.28f, 0.85f);
-            main.startSize = new ParticleSystem.MinMaxCurve(1.2f, 2.0f);
-            main.startColor = new Color(0.91f, 0.94f, 0.98f, 0.68f);
-            main.gravityModifier = -0.025f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(3f, 4f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.25f, 0.9f);
+            main.startSize = new ParticleSystem.MinMaxCurve(1.85f, 2.9f);
+            main.startColor = new Color(0.84f, 0.89f, 0.94f, 0.5f);
+            main.gravityModifier = -0.015f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 150;
+            main.maxParticles = 240;
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             var emission = system.emission;
             emission.enabled = true;
             emission.rateOverTime = 0f;
             var shape = system.shape;
             shape.enabled = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius = 0.42f;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 13f;
+            shape.radius = 0.28f;
             var noise = system.noise;
             noise.enabled = true;
-            noise.strength = new ParticleSystem.MinMaxCurve(0.12f, 0.3f);
-            noise.frequency = 0.28f;
-            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.045f);
+            noise.strength = new ParticleSystem.MinMaxCurve(0.2f, 0.48f);
+            noise.frequency = 0.34f;
+            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.08f);
             noise.damping = true;
             noise.quality = ParticleSystemNoiseQuality.Low;
             var color = system.colorOverLifetime;
@@ -103,13 +104,13 @@ namespace AirRace.Gameplay
             var gradient = new Gradient();
             gradient.SetKeys(
                 new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.84f, 0.87f, 0.91f), 0.74f), new GradientColorKey(new Color(0.72f, 0.76f, 0.81f), 1f) },
-                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.56f, 0.18f), new GradientAlphaKey(0.42f, 0.62f), new GradientAlphaKey(0f, 1f) });
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.5f, 0.1f), new GradientAlphaKey(0.34f, 0.58f), new GradientAlphaKey(0f, 1f) });
             color.color = gradient;
             var size = system.sizeOverLifetime;
             size.enabled = true;
             size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
-                new Keyframe(0f, 0.38f), new Keyframe(0.2f, 1f), new Keyframe(1f, 2.65f)));
-            ConfigureSmokeRenderer(go.GetComponent<ParticleSystemRenderer>());
+                new Keyframe(0f, 0.56f), new Keyframe(0.28f, 1f), new Keyframe(1f, 1.85f)));
+            ConfigureSmokeRenderer(go.GetComponent<ParticleSystemRenderer>(), system);
             return system;
         }
 
@@ -146,10 +147,18 @@ namespace AirRace.Gameplay
             Destroy(go, 1.5f);
         }
 
-        private static void ConfigureSmokeRenderer(ParticleSystemRenderer renderer)
+        private static void ConfigureSmokeRenderer(ParticleSystemRenderer renderer, ParticleSystem system)
         {
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
             renderer.alignment = ParticleSystemRenderSpace.View;
+            renderer.sortMode = ParticleSystemSortMode.OldestInFront;
+            var sheet = system.textureSheetAnimation;
+            sheet.enabled = true;
+            sheet.mode = ParticleSystemAnimationMode.Grid;
+            sheet.numTilesX = 4;
+            sheet.numTilesY = 4;
+            sheet.animation = ParticleSystemAnimationType.WholeSheet;
+            sheet.frameOverTime = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0f, 1f, 1f));
             Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit");
             if (shader == null) return;
             if (smokeTexture == null) smokeTexture = CreateSmokeTexture();
@@ -166,27 +175,53 @@ namespace AirRace.Gameplay
 
         private static Texture2D CreateSmokeTexture()
         {
-            const int resolution = 64;
+            const int tileSize = 64;
+            const int tiles = 4;
+            const int resolution = tileSize * tiles;
             var texture = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false, true)
             {
-                name = "AirRace_Runtime_SoftSmoke_Texture",
+                name = "AirRace_Runtime_Animated_Smoke_Atlas",
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Bilinear,
                 hideFlags = HideFlags.DontSave
             };
             var pixels = new Color[resolution * resolution];
-            for (int y = 0; y < resolution; y++)
-            for (int x = 0; x < resolution; x++)
+            var random = new System.Random(70421);
+            for (int tileY = 0; tileY < tiles; tileY++)
+            for (int tileX = 0; tileX < tiles; tileX++)
             {
-                float u = (x + 0.5f) / resolution * 2f - 1f;
-                float v = (y + 0.5f) / resolution * 2f - 1f;
-                float radius = Mathf.Sqrt(u * u * 0.86f + v * v);
-                float edge = 1f - Mathf.SmoothStep(0.28f, 1.02f, radius);
-                float broadNoise = Mathf.PerlinNoise((u + 1.7f) * 3.6f, (v + 2.1f) * 3.6f);
-                float fineNoise = Mathf.PerlinNoise((u + 4.3f) * 8.4f, (v + 0.9f) * 8.4f);
-                float wisps = 0.58f + broadNoise * 0.3f + fineNoise * 0.22f;
-                float alpha = Mathf.Clamp01(edge * wisps);
-                pixels[y * resolution + x] = new Color(1f, 1f, 1f, alpha);
+                Vector2[] lobes = new Vector2[9];
+                float[] radii = new float[lobes.Length];
+                for (int i = 0; i < lobes.Length; i++)
+                {
+                    float angle = (float)random.NextDouble() * Mathf.PI * 2f;
+                    float radius = Mathf.Sqrt((float)random.NextDouble()) * 0.54f;
+                    lobes[i] = new Vector2(0.5f + Mathf.Cos(angle) * radius, 0.5f + Mathf.Sin(angle) * radius);
+                    radii[i] = Mathf.Lerp(0.13f, 0.34f, (float)random.NextDouble());
+                }
+
+                for (int y = 0; y < tileSize; y++)
+                for (int x = 0; x < tileSize; x++)
+                {
+                    float u = (x + 0.5f) / tileSize;
+                    float v = (y + 0.5f) / tileSize;
+                    float density = 0f;
+                    for (int i = 0; i < lobes.Length; i++)
+                    {
+                        Vector2 delta = new Vector2((u - lobes[i].x) * 0.92f, v - lobes[i].y);
+                        float d = delta.magnitude / radii[i];
+                        float lobe = 1f - Mathf.SmoothStep(0.56f, 1.12f, d);
+                        density = Mathf.Max(density, lobe);
+                    }
+
+                    float broad = Mathf.PerlinNoise(u * 5.2f + tileX * 7.31f, v * 5.2f + tileY * 9.17f);
+                    float detail = Mathf.PerlinNoise(u * 13.5f + 11f + tileY, v * 13.5f + 3f + tileX);
+                    float edgeNoise = 0.73f + broad * 0.32f + detail * 0.12f;
+                    float alpha = Mathf.Clamp01((density - 0.13f) * 1.27f * edgeNoise);
+                    int px = tileX * tileSize + x;
+                    int py = tileY * tileSize + y;
+                    pixels[py * resolution + px] = new Color(1f, 1f, 1f, alpha);
+                }
             }
             texture.SetPixels(pixels);
             texture.Apply(false, true);
