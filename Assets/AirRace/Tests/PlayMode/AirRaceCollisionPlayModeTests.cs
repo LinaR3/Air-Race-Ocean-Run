@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
@@ -7,12 +8,54 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+using Object = UnityEngine.Object;
 
 namespace AirRace.Tests
 {
     public sealed class AirRaceCollisionPlayModeTests
     {
         private const string SceneName = "AirRace_Level01_Map";
+
+        [Test]
+        public void AircraftInput_PreservesWASDArrowAndActionBindings()
+        {
+            Keyboard keyboard = InputSystem.AddDevice<Keyboard>();
+            try
+            {
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState());
+                InputSystem.Update();
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(
+                    Key.W, Key.D, Key.LeftShift));
+                InputSystem.Update();
+                Type inputType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(assembly => assembly.GetType("AirRace.Gameplay.AircraftFlightInput"))
+                    .First(type => type != null);
+                var read = inputType.GetMethod("Read");
+                object wasd = read.Invoke(null, new object[] { keyboard });
+                Assert.That(ReadInput<bool>(inputType, wasd, "IsAvailable"), Is.True);
+                Assert.That(ReadInput<float>(inputType, wasd, "Pitch"), Is.EqualTo(1f));
+                Assert.That(ReadInput<float>(inputType, wasd, "Turn"), Is.EqualTo(1f));
+                Assert.That(ReadInput<bool>(inputType, wasd, "IsBraking"), Is.True);
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.UpArrow, Key.LeftArrow));
+                InputSystem.Update();
+                object arrows = read.Invoke(null, new object[] { keyboard });
+                Assert.That(ReadInput<float>(inputType, arrows, "Pitch"), Is.EqualTo(1f));
+                Assert.That(ReadInput<float>(inputType, arrows, "Turn"), Is.EqualTo(-1f));
+                Assert.That(ReadInput<bool>(inputType, arrows, "IsBraking"), Is.False);
+
+                object noKeyboard = read.Invoke(null, new object[] { null });
+                Assert.That(ReadInput<bool>(inputType, noKeyboard, "IsAvailable"), Is.False);
+                Assert.That(ReadInput<float>(inputType, noKeyboard, "Pitch"), Is.Zero);
+                Assert.That(ReadInput<float>(inputType, noKeyboard, "Turn"), Is.Zero);
+            }
+            finally
+            {
+                InputSystem.RemoveDevice(keyboard);
+                InputSystem.Update();
+            }
+        }
 
         [UnityTest]
         public IEnumerator Aircraft_HitsRealPylon_ReboundsAndReturnsToCruise()
@@ -394,6 +437,11 @@ namespace AirRace.Tests
         {
             manager.GetType().GetMethod("StartRace").Invoke(manager, null);
             manager.GetType().GetProperty("CountdownRemaining").SetValue(manager, 0f);
+        }
+
+        private static T ReadInput<T>(Type inputType, object input, string property)
+        {
+            return (T)inputType.GetProperty(property).GetValue(input);
         }
 
         private static GameObject FindUiObject(string name)

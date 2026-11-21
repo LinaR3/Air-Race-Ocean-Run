@@ -66,15 +66,15 @@ namespace AirRace.Gameplay
         private void Update()
         {
             AirRaceRunManager run = AirRaceRunManager.Instance;
-            Keyboard keyboard = Keyboard.current;
+            AircraftFlightInput input = AircraftFlightInput.Read(Keyboard.current);
 
             if (run != null && (run.State == RaceState.Won || run.State == RaceState.Failed))
             {
-                if (keyboard != null && keyboard.rKey.wasPressedThisFrame) run.Restart();
+                if (input.RestartPressed) run.Restart();
                 return;
             }
 
-            if (run != null && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            if (run != null && input.PausePressed)
             {
                 run.TogglePause();
                 return;
@@ -93,7 +93,7 @@ namespace AirRace.Gameplay
                 pitchInput = 0f;
                 turnInput = 0f;
                 braking = false;
-                if (keyboard != null && keyboard.enterKey.wasPressedThisFrame) run.StartRace();
+                if (input.StartPressed) run.StartRace();
                 return;
             }
 
@@ -105,14 +105,12 @@ namespace AirRace.Gameplay
                 return;
             }
 
-            if (keyboard == null || crashed) return;
-            pitchInput = (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1f : 0f) -
-                         (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1f : 0f);
-            turnInput = (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1f : 0f) -
-                        (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1f : 0f);
-            braking = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
+            if (!input.IsAvailable || crashed) return;
+            pitchInput = input.Pitch;
+            turnInput = input.Turn;
+            braking = input.IsBraking;
 
-            if (keyboard.spaceKey.wasPressedThisFrame && AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.TryActivateBoost())
+            if (input.BoostPressed && AirRaceRunManager.Instance != null && AirRaceRunManager.Instance.TryActivateBoost())
                 StartBarrelRoll();
 
             if (body.position.y <= waterLine + 1.5f && AirRaceRunManager.Instance != null)
