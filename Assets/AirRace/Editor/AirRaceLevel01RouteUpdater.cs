@@ -58,8 +58,11 @@ namespace AirRace.EditorTools
         {
             GameObject finish = GameObject.Find("Finish_Marker_07");
             if (finish == null) throw new MissingReferenceException("Missing the seventh finish marker.");
-            Vector3 heading = Vector3.ProjectOnPlane(GatePositions[1] - GatePositions[GatePositions.Length - 1], Vector3.up).normalized;
-            Vector3 position = GatePositions[0] + heading * 48f;
+            // The lap ends on the actual final leg, from checkpoint 6 back toward checkpoint 1.
+            // Keep the gate near the floating start panel without placing it beside the route.
+            Vector3 finalLeg = Vector3.ProjectOnPlane(GatePositions[0] - GatePositions[GatePositions.Length - 1], Vector3.up);
+            Vector3 heading = finalLeg.normalized;
+            Vector3 position = Vector3.Lerp(GatePositions[GatePositions.Length - 1], GatePositions[0], 0.72f);
             finish.transform.SetPositionAndRotation(position, Quaternion.LookRotation(heading, Vector3.up));
             EditorUtility.SetDirty(finish.transform);
         }
@@ -174,9 +177,14 @@ namespace AirRace.EditorTools
             float[] distances = new float[GatePositions.Length];
             for (int i = 0; i < GatePositions.Length; i++)
                 distances[i] = Vector3.Distance(GatePositions[i], GatePositions[(i + 1) % GatePositions.Length]);
+            Vector3 finishPosition = Vector3.Lerp(GatePositions[GatePositions.Length - 1], GatePositions[0], 0.72f);
+            float distanceAfterCheckpointSix = Vector3.Distance(GatePositions[GatePositions.Length - 1], finishPosition);
+            float totalRaceDistance = StartToFirstGateMeters + distanceAfterCheckpointSix;
+            for (int i = 0; i < GatePositions.Length - 1; i++) totalRaceDistance += distances[i];
             string positions = string.Join(", ", System.Array.ConvertAll(GatePositions,
                 p => $"[{p.x:0}, {p.y:0}, {p.z:0}]"));
             string lengths = string.Join(", ", System.Array.ConvertAll(distances, d => d.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)));
+            string finish = $"[{finishPosition.x:0.00}, {finishPosition.y:0.0}, {finishPosition.z:0.0}]";
             string json = "{\n" +
                 "  \"level\": \"Level 01\",\n" +
                 "  \"durationSeconds\": 60,\n" +
@@ -191,9 +199,12 @@ namespace AirRace.EditorTools
                 "  \"oceanSizeMeters\": \"4800 x 4800 square\",\n" +
                 "  \"invisibleFlightBoundaryMeters\": \"900 from world origin on X and Z\",\n" +
                 "  \"pylonHeightMeters\": 25,\n" +
-                "  \"finishMarker\": \"Gold paired pylons near checkpoint 1\",\n" +
+                "  \"finishMarker\": \"Gold paired pylons on the final leg directly after checkpoint 6\",\n" +
+                "  \"finishPositionMeters\": " + finish + ",\n" +
+                "  \"distanceAfterCheckpoint6Meters\": " + distanceAfterCheckpointSix.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + ",\n" +
+                "  \"nominalRaceDistanceMeters\": " + totalRaceDistance.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + ",\n" +
                 "  \"energyCanVisibility\": \"5 m tall can inside a 10.4 m diameter double-sided bright yellow-orange emissive ring; pickup trigger radius 10 m\",\n" +
-                "  \"designNote\": \"Six ordered paired pylon gates form a broad closed 1.65 km oval. A floating start panel sits before checkpoint 1; the total nominal distance from start to finish is about 1.77 km, leaving a small handling margin within the existing 60 second limit.\"\n" +
+                "  \"designNote\": \"Six ordered paired pylon gates form a broad closed oval. The finish lies directly on the final leg after checkpoint 6, close to the floating start panel. About 1.69 km at 34 m/s takes roughly 50 seconds, leaving handling margin within the existing 60 second limit.\"\n" +
                 "}\n";
             File.WriteAllText(RoutePath, json);
         }

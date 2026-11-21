@@ -148,10 +148,9 @@ namespace AirRace.EditorTools
 
             var finish = new GameObject("Finish_Marker_07");
             finish.transform.SetParent(courseRoot.transform, false);
-            Vector3 startDirection = Vector3.ProjectOnPlane(gatePositions[1] - gatePositions[gatePositions.Length - 1], Vector3.up).normalized;
-            finish.transform.position = gatePositions[0] + startDirection * 48f;
-            finish.transform.position = new Vector3(finish.transform.position.x, gatePositions[0].y, finish.transform.position.z);
-            finish.transform.rotation = Quaternion.LookRotation(startDirection, Vector3.up);
+            Vector3 finalLeg = Vector3.ProjectOnPlane(gatePositions[0] - gatePositions[gatePositions.Length - 1], Vector3.up).normalized;
+            finish.transform.position = Vector3.Lerp(gatePositions[gatePositions.Length - 1], gatePositions[0], 0.72f);
+            finish.transform.rotation = Quaternion.LookRotation(finalLeg, Vector3.up);
             finish.AddComponent<AirRace.Gameplay.AirRaceFinishGate>();
             var finishTrigger = finish.AddComponent<BoxCollider>();
             finishTrigger.isTrigger = true;
@@ -187,6 +186,7 @@ namespace AirRace.EditorTools
 
             var plane = (GameObject)PrefabUtility.InstantiatePrefab(aircraftPrefab, scene);
             plane.name = "Aircraft_Player";
+            Vector3 startDirection = Vector3.ProjectOnPlane(gatePositions[1] - gatePositions[gatePositions.Length - 1], Vector3.up).normalized;
             // Give players enough approach distance to read and line up with the first gate.
             plane.transform.position = gatePositions[0] - startDirection * 120f;
             plane.transform.position = new Vector3(plane.transform.position.x, gatePositions[0].y, plane.transform.position.z);
